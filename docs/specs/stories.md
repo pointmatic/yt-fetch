@@ -252,14 +252,14 @@ Console and structured JSONL logging.
 - [x] Achieve meaningful coverage across core modules (96% overall)
 - [x] All tests run without network access
 
-### Story 7.2: v0.4.1 Integration Tests [Planned]
+### Story 7.2: v0.4.1 Integration Tests [Done]
 
-- [ ] Implement `tests/integration/test_fetch_live.py`:
-  - [ ] Fetch metadata for a known public video
-  - [ ] Fetch transcript for a known public video
-  - [ ] Full pipeline end-to-end
-  - [ ] Batch with mixed valid/invalid IDs
-- [ ] Guard all integration tests behind `RUN_INTEGRATION=1` env var
+- [x] Implement `tests/integration/test_fetch_live.py`:
+  - [x] Fetch metadata for a known public video
+  - [x] Fetch transcript for a known public video
+  - [x] Full pipeline end-to-end
+  - [x] Batch with mixed valid/invalid IDs
+- [x] Guard all integration tests behind `RUN_INTEGRATION=1` env var
 
 ### Story 7.3: v0.4.2 Pipeline and Error Tests [Planned]
 

@@ -70,25 +70,25 @@ Console and structured JSONL logging.
 
 ## Phase 4: Core Services
 
-### Story 4.1: v0.1.0 Video ID Parsing and Validation [Planned]
+### Story 4.1: v0.1.0 Video ID Parsing and Validation [Done]
 
-- [ ] Implement `yt_fetch/services/id_parser.py`:
-  - [ ] `parse_video_id(input_str) -> str | None` — extract ID from URL or raw string
-  - [ ] `parse_many(inputs) -> list[str]` — parse, deduplicate, preserve order
-  - [ ] `load_ids_from_file(path) -> list[str]` — load from text, CSV, or JSONL
-- [ ] Supported URL patterns:
-  - [ ] `https://www.youtube.com/watch?v=<id>`
-  - [ ] `https://youtu.be/<id>`
-  - [ ] `https://www.youtube.com/shorts/<id>`
-  - [ ] URLs with extra query parameters
-  - [ ] Raw 11-character IDs
-- [ ] Validation: 11 chars, alphanumeric + `-` + `_`
-- [ ] Write `tests/test_id_parser.py`:
-  - [ ] All URL forms
-  - [ ] Raw IDs
-  - [ ] Invalid inputs return `None`
-  - [ ] Deduplication preserves order
-  - [ ] File loading (text, CSV, JSONL)
+- [x] Implement `yt_fetch/services/id_parser.py`:
+  - [x] `parse_video_id(input_str) -> str | None` — extract ID from URL or raw string
+  - [x] `parse_many(inputs) -> list[str]` — parse, deduplicate, preserve order
+  - [x] `load_ids_from_file(path) -> list[str]` — load from text, CSV, or JSONL
+- [x] Supported URL patterns:
+  - [x] `https://www.youtube.com/watch?v=<id>`
+  - [x] `https://youtu.be/<id>`
+  - [x] `https://www.youtube.com/shorts/<id>`
+  - [x] URLs with extra query parameters
+  - [x] Raw 11-character IDs
+- [x] Validation: 11 chars, alphanumeric + `-` + `_`
+- [x] Write `tests/test_id_parser.py`:
+  - [x] All URL forms
+  - [x] Raw IDs
+  - [x] Invalid inputs return `None`
+  - [x] Deduplication preserves order
+  - [x] File loading (text, CSV, JSONL)
 
 ### Story 4.2: v0.1.1 Metadata Retrieval (yt-dlp) [Planned]
 

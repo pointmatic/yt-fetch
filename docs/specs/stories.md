@@ -261,12 +261,12 @@ Console and structured JSONL logging.
   - [x] Batch with mixed valid/invalid IDs
 - [x] Guard all integration tests behind `RUN_INTEGRATION=1` env var
 
-### Story 7.3: v0.4.2 Pipeline and Error Tests [Planned]
+### Story 7.3: v0.4.2 Pipeline and Error Tests [Done]
 
-- [ ] Idempotency: verify skip behavior and force overwrite
-- [ ] Error isolation: one bad ID doesn't crash batch
-- [ ] Fail-fast: verify early termination
-- [ ] Retry: verify backoff on transient failures
+- [x] Idempotency: verify skip behavior and force overwrite
+- [x] Error isolation: one bad ID doesn't crash batch
+- [x] Fail-fast: verify early termination
+- [x] Retry: verify backoff on transient failures
 
 ---
 

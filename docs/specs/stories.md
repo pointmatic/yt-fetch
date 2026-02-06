@@ -234,13 +234,13 @@ Console and structured JSONL logging.
 - [x] Exit codes: 0 (success), 1 (generic error), 2 (partial failure + --strict), 3 (all failed)
 - [x] Write `tests/test_cli.py` — smoke tests for each subcommand
 
-### Story 6.2: v0.3.0 Library API [Planned]
+### Story 6.2: v0.3.1 Library API [Done]
 
-- [ ] Export public API from `yt_fetch/__init__.py`:
-  - [ ] `fetch_video(video_id, options) -> FetchResult`
-  - [ ] `fetch_batch(video_ids, options) -> BatchResult`
-- [ ] Ensure library usage does not require CLI context
-- [ ] Write library API tests
+- [x] Export public API from `yt_fetch/__init__.py`:
+  - [x] `fetch_video(video_id, options) -> FetchResult`
+  - [x] `fetch_batch(video_ids, options) -> BatchResult`
+- [x] Ensure library usage does not require CLI context
+- [x] Write library API tests
 
 ---
 

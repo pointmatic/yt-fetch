@@ -8,7 +8,7 @@ from pathlib import Path
 
 from yt_fetch.core.models import BatchResult, FetchResult
 from yt_fetch.core.options import FetchOptions
-from yt_fetch.core.writer import write_metadata, write_transcript_json
+from yt_fetch.core.writer import write_metadata, write_summary, write_transcript_json
 from yt_fetch.services.media import download_media
 from yt_fetch.services.metadata import MetadataError, get_metadata
 from yt_fetch.services.transcript import TranscriptError, get_transcript
@@ -133,9 +133,44 @@ def process_batch(video_ids: list[str], options: FetchOptions) -> BatchResult:
     Each video is processed in isolation — one failure does not stop others
     unless --fail-fast is set.
     A shared TokenBucket rate limiter is used across all workers.
+    Writes summary.json and prints console summary at the end.
     """
     rate_limiter = TokenBucket(rate=options.rate_limit)
-    return asyncio.run(_async_process_batch(video_ids, options, rate_limiter))
+    batch_result = asyncio.run(_async_process_batch(video_ids, options, rate_limiter))
+
+    out_dir = Path(options.out)
+    write_summary(batch_result, out_dir)
+    print_summary(batch_result, out_dir)
+
+    return batch_result
+
+
+def print_summary(batch: BatchResult, out_dir: Path) -> None:
+    """Print a human-readable batch summary to the console."""
+    transcript_ok = sum(
+        1 for r in batch.results if r.transcript_path is not None
+    )
+    transcript_fail = sum(
+        1 for r in batch.results
+        if any("transcript" in e for e in r.errors)
+    )
+    media_count = sum(len(r.media_paths) for r in batch.results)
+
+    lines = [
+        "",
+        "=" * 40,
+        "  yt-fetch Summary",
+        "=" * 40,
+        f"  Total:        {batch.total}",
+        f"  Succeeded:    {batch.succeeded}",
+        f"  Failed:       {batch.failed}",
+        f"  Transcripts:  {transcript_ok} ok, {transcript_fail} failed",
+        f"  Media files:  {media_count}",
+        f"  Output:       {out_dir.resolve()}",
+        "=" * 40,
+        "",
+    ]
+    logger.info("\n".join(lines))
 
 
 async def _async_process_batch(

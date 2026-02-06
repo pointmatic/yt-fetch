@@ -208,15 +208,15 @@ Console and structured JSONL logging.
 - [x] Integrate rate limiter into pipeline before each external call
 - [x] Write rate limiter unit tests
 
-### Story 5.7: v0.2.6 Summary Reporting [Planned]
+### Story 5.7: v0.2.6 Summary Reporting [Done]
 
-- [ ] At end of batch run, print summary to console:
-  - [ ] Total IDs processed, successes, failures
-  - [ ] Transcript successes/failures
-  - [ ] Media downloads
-  - [ ] Output directory path
-- [ ] Optionally write `out/summary.json` with list of results and status
-- [ ] Write summary output tests
+- [x] At end of batch run, print summary to console:
+  - [x] Total IDs processed, successes, failures
+  - [x] Transcript successes/failures
+  - [x] Media downloads
+  - [x] Output directory path
+- [x] Optionally write `out/summary.json` with list of results and status
+- [x] Write summary output tests
 
 ---
 

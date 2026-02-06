@@ -8,7 +8,14 @@ from pathlib import Path
 
 from yt_fetch.core.models import BatchResult, FetchResult
 from yt_fetch.core.options import FetchOptions
-from yt_fetch.core.writer import write_metadata, write_summary, write_transcript_json
+from yt_fetch.core.writer import (
+    write_metadata,
+    write_summary,
+    write_transcript_json,
+    write_transcript_srt,
+    write_transcript_txt,
+    write_transcript_vtt,
+)
 from yt_fetch.services.media import download_media
 from yt_fetch.services.metadata import MetadataError, get_metadata
 from yt_fetch.services.transcript import TranscriptError, get_transcript
@@ -78,6 +85,9 @@ def process_video(
                 rate_limiter.acquire()
             transcript = get_transcript(video_id, options)
             transcript_path = write_transcript_json(transcript, out_dir)
+            write_transcript_txt(transcript, out_dir)
+            write_transcript_vtt(transcript, out_dir)
+            write_transcript_srt(transcript, out_dir)
             logger.info("Wrote transcript for %s", video_id)
         except TranscriptError as exc:
             logger.error("Transcript error for %s: %s", video_id, exc)

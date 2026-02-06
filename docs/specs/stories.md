@@ -282,14 +282,14 @@ Console and structured JSONL logging.
   - [x] Library API usage
 - [x] Create `CHANGELOG.md`
 
-### Story 8.2: v0.5.0 Final Testing and Refinement [Planned]
+### Story 8.2: v0.5.0 Final Testing and Refinement [Done]
 
-- [ ] Run full test suite (unit + integration)
-- [ ] Fix any remaining bugs
-- [ ] Review and clean up code
-- [ ] Verify acceptance criteria from features.md:
-  - [ ] `yt_fetch fetch --id dQw4w9WgXcQ` produces metadata + transcript
-  - [ ] Batch mode with summary and per-video isolation
-  - [ ] Re-run without `--force` skips completed work
-  - [ ] Transcript exports (.txt, .json, .vtt, .srt) are correct
-  - [ ] Errors are structured and do not crash the run
+- [x] Run full test suite (unit + integration)
+- [x] Fix any remaining bugs
+- [x] Review and clean up code
+- [x] Verify acceptance criteria from features.md:
+  - [x] `yt_fetch fetch --id dQw4w9WgXcQ` produces metadata + transcript
+  - [x] Batch mode with summary and per-video isolation
+  - [x] Re-run without `--force` skips completed work
+  - [x] Transcript exports (.txt, .json, .vtt, .srt) are correct
+  - [x] Errors are structured and do not crash the run

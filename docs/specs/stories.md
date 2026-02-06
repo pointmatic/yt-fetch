@@ -169,15 +169,15 @@ Console and structured JSONL logging.
   - [x] Verify VTT/SRT timestamp formatting correctness
 - [x] Write `tests/test_transcript_format.py` for timestamp edge cases
 
-### Story 5.3: v0.2.2 Caching and Idempotency [Planned]
+### Story 5.3: v0.2.2 Caching and Idempotency [Done]
 
-- [ ] Before each pipeline step, check if output file exists
-- [ ] If exists and no `--force*` flag: skip that step, log skip
-- [ ] Selective force: `--force-metadata`, `--force-transcript`, `--force-media`
-- [ ] `--force` overrides all selective flags
-- [ ] Write idempotency tests:
-  - [ ] Re-run without `--force` skips work
-  - [ ] Re-run with `--force` overwrites
+- [x] Before each pipeline step, check if output file exists
+- [x] If exists and no `--force*` flag: skip that step, log skip
+- [x] Selective force: `--force-metadata`, `--force-transcript`, `--force-media`
+- [x] `--force` overrides all selective flags
+- [x] Write idempotency tests:
+  - [x] Re-run without `--force` skips work
+  - [x] Re-run with `--force` overwrites
 
 ### Story 5.4: v0.2.3 Batch Processing with Concurrency [Planned]
 

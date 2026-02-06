@@ -139,18 +139,18 @@ Console and structured JSONL logging.
 
 ## Phase 5: Pipeline & Orchestration
 
-### Story 5.1: v0.2.0 Per-Video Pipeline [Planned]
+### Story 5.1: v0.2.0 Per-Video Pipeline [Done]
 
-- [ ] Implement `yt_fetch/core/pipeline.py`:
-  - [ ] `process_video(video_id, options) -> FetchResult`
-- [ ] Workflow steps:
-  - [ ] Create output folder `<out_dir>/<video_id>/`
-  - [ ] Check cache — skip steps where output exists (unless `--force*`)
-  - [ ] Fetch metadata → pass to writer
-  - [ ] Fetch transcript → pass to writer
-  - [ ] Download media (if enabled) → write to `media/` subfolder
-  - [ ] Return structured `FetchResult`
-- [ ] Write `tests/test_pipeline.py` with mocked services
+- [x] Implement `yt_fetch/core/pipeline.py`:
+  - [x] `process_video(video_id, options) -> FetchResult`
+- [x] Workflow steps:
+  - [x] Create output folder `<out_dir>/<video_id>/`
+  - [x] Check cache — skip steps where output exists (unless `--force*`)
+  - [x] Fetch metadata → pass to writer
+  - [x] Fetch transcript → pass to writer
+  - [x] Download media (if enabled) → write to `media/` subfolder
+  - [x] Return structured `FetchResult`
+- [x] Write `tests/test_pipeline.py` with mocked services
 
 ### Story 5.2: v0.2.1 Output File Writing [Planned]
 

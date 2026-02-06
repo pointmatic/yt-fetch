@@ -47,16 +47,16 @@ Pydantic data models and settings.
   - [x] Serialization round-trip tests
   - [x] Default values tests for `FetchOptions`
 
-### Story 3.4: Configuration System [Planned]
+### Story 3.4: v0.0.4 Configuration System [Done]
 
 CLI flags, env vars, and YAML config file integration.
 
-- [ ] Wire `FetchOptions` into `cli.py` Click commands
-- [ ] Implement config precedence: CLI flags → env vars → YAML → defaults
-- [ ] Create a sample `yt_fetch.yaml.example` file
-- [ ] Verify: CLI flag overrides env var overrides YAML overrides default
+- [x] Wire `FetchOptions` into `cli.py` Click commands
+- [x] Implement config precedence: CLI flags → env vars → YAML → defaults
+- [x] Create a sample `yt_fetch.yaml.example` file
+- [x] Verify: CLI flag overrides env var overrides YAML overrides default
 
-### Story 3.5: Logging Framework [Planned]
+### Story 3.5: v0.0.5 Logging Framework [Planned]
 
 Console and structured JSONL logging.
 
@@ -70,7 +70,7 @@ Console and structured JSONL logging.
 
 ## Phase 4: Core Services
 
-### Story 4.1: Video ID Parsing and Validation [Planned]
+### Story 4.1: v0.1.0 Video ID Parsing and Validation [Planned]
 
 - [ ] Implement `yt_fetch/services/id_parser.py`:
   - [ ] `parse_video_id(input_str) -> str | None` — extract ID from URL or raw string
@@ -90,7 +90,7 @@ Console and structured JSONL logging.
   - [ ] Deduplication preserves order
   - [ ] File loading (text, CSV, JSONL)
 
-### Story 4.2: Metadata Retrieval (yt-dlp) [Planned]
+### Story 4.2: v0.1.1 Metadata Retrieval (yt-dlp) [Planned]
 
 - [ ] Implement `yt_fetch/services/metadata.py`:
   - [ ] `get_metadata(video_id, options) -> Metadata`
@@ -100,7 +100,7 @@ Console and structured JSONL logging.
 - [ ] Handle errors: video not found, private video, network failure
 - [ ] Write unit tests with mocked yt-dlp responses
 
-### Story 4.3: Metadata Retrieval (YouTube Data API v3, optional) [Planned]
+### Story 4.3: v0.1.2 Metadata Retrieval (YouTube Data API v3, optional) [Planned]
 
 - [ ] Implement `_youtube_api_backend(video_id, api_key) -> dict` in `metadata.py`
 - [ ] Add `google-api-python-client` as optional dependency
@@ -108,7 +108,7 @@ Console and structured JSONL logging.
 - [ ] Guard behind `yt_api_key` option — skip if not configured
 - [ ] Write unit tests with mocked API responses
 
-### Story 4.4: Transcript Fetching [Planned]
+### Story 4.4: v0.1.3 Transcript Fetching [Planned]
 
 - [ ] Implement `yt_fetch/services/transcript.py`:
   - [ ] `get_transcript(video_id, options) -> Transcript`
@@ -124,7 +124,7 @@ Console and structured JSONL logging.
   - [ ] Multiple language variants
 - [ ] Write unit tests with mocked `youtube-transcript-api` responses
 
-### Story 4.5: Media Download [Planned]
+### Story 4.5: v0.1.4 Media Download [Planned]
 
 - [ ] Implement `yt_fetch/services/media.py`:
   - [ ] `download_media(video_id, options, out_dir) -> MediaResult`
@@ -139,7 +139,7 @@ Console and structured JSONL logging.
 
 ## Phase 5: Pipeline & Orchestration
 
-### Story 5.1: Per-Video Pipeline [Planned]
+### Story 5.1: v0.2.0 Per-Video Pipeline [Planned]
 
 - [ ] Implement `yt_fetch/core/pipeline.py`:
   - [ ] `process_video(video_id, options) -> FetchResult`
@@ -152,7 +152,7 @@ Console and structured JSONL logging.
   - [ ] Return structured `FetchResult`
 - [ ] Write `tests/test_pipeline.py` with mocked services
 
-### Story 5.2: Output File Writing [Planned]
+### Story 5.2: v0.2.1 Output File Writing [Planned]
 
 - [ ] Implement `yt_fetch/core/writer.py`:
   - [ ] `write_metadata(metadata, out_dir) -> Path`
@@ -169,7 +169,7 @@ Console and structured JSONL logging.
   - [ ] Verify VTT/SRT timestamp formatting correctness
 - [ ] Write `tests/test_transcript_format.py` for timestamp edge cases
 
-### Story 5.3: Caching and Idempotency [Planned]
+### Story 5.3: v0.2.2 Caching and Idempotency [Planned]
 
 - [ ] Before each pipeline step, check if output file exists
 - [ ] If exists and no `--force*` flag: skip that step, log skip
@@ -179,7 +179,7 @@ Console and structured JSONL logging.
   - [ ] Re-run without `--force` skips work
   - [ ] Re-run with `--force` overwrites
 
-### Story 5.4: Batch Processing with Concurrency [Planned]
+### Story 5.4: v0.2.3 Batch Processing with Concurrency [Planned]
 
 - [ ] Implement `process_batch(video_ids, options) -> BatchResult` in `pipeline.py`
 - [ ] Use `asyncio` with semaphore for concurrency (`--workers N`, default 3)
@@ -190,7 +190,7 @@ Console and structured JSONL logging.
   - [ ] Error isolation
   - [ ] Fail-fast behavior
 
-### Story 5.5: Error Handling and Retry [Planned]
+### Story 5.5: v0.2.4 Error Handling and Retry [Planned]
 
 - [ ] Implement `yt_fetch/utils/retry.py`:
   - [ ] Exponential backoff with jitter (base 1s, multiplier 2x, jitter ±25%)
@@ -199,7 +199,7 @@ Console and structured JSONL logging.
 - [ ] Apply retry decorator to metadata, transcript, and media service calls
 - [ ] Write retry tests with simulated failures
 
-### Story 5.6: Rate Limiting [Planned]
+### Story 5.6: v0.2.5 Rate Limiting [Planned]
 
 - [ ] Implement `yt_fetch/utils/rate_limit.py`:
   - [ ] Token bucket algorithm
@@ -208,7 +208,7 @@ Console and structured JSONL logging.
 - [ ] Integrate rate limiter into pipeline before each external call
 - [ ] Write rate limiter unit tests
 
-### Story 5.7: Summary Reporting [Planned]
+### Story 5.7: v0.2.6 Summary Reporting [Planned]
 
 - [ ] At end of batch run, print summary to console:
   - [ ] Total IDs processed, successes, failures
@@ -222,7 +222,7 @@ Console and structured JSONL logging.
 
 ## Phase 6: CLI & Library API
 
-### Story 6.1: CLI Subcommands [Planned]
+### Story 6.1: v0.3.0 CLI Subcommands [Planned]
 
 - [ ] Implement Click subcommands in `yt_fetch/cli.py`:
   - [ ] `yt_fetch fetch` — full pipeline (metadata + transcript + media)
@@ -234,7 +234,7 @@ Console and structured JSONL logging.
 - [ ] Exit codes: 0 (success), 1 (generic error), 2 (partial failure + --strict), 3 (all failed)
 - [ ] Write `tests/test_cli.py` — smoke tests for each subcommand
 
-### Story 6.2: Library API [Planned]
+### Story 6.2: v0.3.0 Library API [Planned]
 
 - [ ] Export public API from `yt_fetch/__init__.py`:
   - [ ] `fetch_video(video_id, options) -> FetchResult`
@@ -246,13 +246,13 @@ Console and structured JSONL logging.
 
 ## Phase 7: Testing & Quality
 
-### Story 7.1: Unit Test Suite [Planned]
+### Story 7.1: v0.4.0 Unit Test Suite [Planned]
 
 - [ ] Ensure all unit tests pass: ID parsing, models, transcript formatting, writer, rate limiter
 - [ ] Achieve meaningful coverage across core modules
 - [ ] All tests run without network access
 
-### Story 7.2: Integration Tests [Planned]
+### Story 7.2: v0.4.1 Integration Tests [Planned]
 
 - [ ] Implement `tests/integration/test_fetch_live.py`:
   - [ ] Fetch metadata for a known public video
@@ -261,7 +261,7 @@ Console and structured JSONL logging.
   - [ ] Batch with mixed valid/invalid IDs
 - [ ] Guard all integration tests behind `RUN_INTEGRATION=1` env var
 
-### Story 7.3: Pipeline and Error Tests [Planned]
+### Story 7.3: v0.4.2 Pipeline and Error Tests [Planned]
 
 - [ ] Idempotency: verify skip behavior and force overwrite
 - [ ] Error isolation: one bad ID doesn't crash batch
@@ -272,7 +272,7 @@ Console and structured JSONL logging.
 
 ## Phase 8: Documentation & Release
 
-### Story 8.1: README and Documentation [Planned]
+### Story 8.1: v0.5.0 README and Documentation [Planned]
 
 - [ ] Create `README.md` with:
   - [ ] Project description and features
@@ -282,7 +282,7 @@ Console and structured JSONL logging.
   - [ ] Library API usage
 - [ ] Create `CHANGELOG.md`
 
-### Story 8.2: Final Testing and Refinement [Planned]
+### Story 8.2: v0.5.1 Final Testing and Refinement [Planned]
 
 - [ ] Run full test suite (unit + integration)
 - [ ] Fix any remaining bugs

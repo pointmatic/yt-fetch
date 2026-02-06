@@ -1,0 +1,25 @@
+# yt_fetch.yaml — Configuration file for yt-fetch
+# Copy this file to yt_fetch.yaml and customize as needed.
+# CLI flags override env vars, which override this file, which override defaults.
+
+# out: ./out
+# languages:
+#   - en
+#   - en-US
+# allow_generated: true
+# allow_any_language: false
+# download: none          # none | video | audio | both
+# max_height: null        # e.g. 720
+# format: best
+# audio_format: best
+# force: false
+# force_metadata: false
+# force_transcript: false
+# force_media: false
+# retries: 3
+# rate_limit: 2.0         # requests per second
+# workers: 3
+# fail_fast: false
+# verbose: false
+# yt_api_key: null         # YouTube Data API v3 key
+# ffmpeg_fallback: error   # error | skip

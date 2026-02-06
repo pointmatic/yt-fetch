@@ -89,6 +89,80 @@ def _map_yt_dlp_info(video_id: str, info: dict) -> Metadata:
 def _youtube_api_backend(video_id: str, api_key: str) -> Metadata:
     """Extract metadata via YouTube Data API v3.
 
-    Placeholder — will be implemented in Story 4.3.
+    Requires the optional `google-api-python-client` package.
     """
-    raise NotImplementedError("YouTube API backend not yet implemented")
+    try:
+        from googleapiclient.discovery import build
+        from googleapiclient.errors import HttpError
+    except ImportError as exc:
+        raise MetadataError(
+            "google-api-python-client is required for YouTube API backend. "
+            "Install with: pip install yt-fetch[youtube-api]"
+        ) from exc
+
+    try:
+        youtube = build("youtube", "v3", developerKey=api_key)
+        request = youtube.videos().list(
+            part="snippet,contentDetails,statistics",
+            id=video_id,
+        )
+        response = request.execute()
+    except HttpError as exc:
+        raise MetadataError(
+            f"YouTube API request failed for {video_id}: {exc}"
+        ) from exc
+    except Exception as exc:
+        raise MetadataError(
+            f"YouTube API error for {video_id}: {exc}"
+        ) from exc
+
+    items = response.get("items", [])
+    if not items:
+        raise MetadataError(f"Video not found via YouTube API: {video_id}")
+
+    return _map_youtube_api_item(video_id, items[0], response)
+
+
+def _map_youtube_api_item(video_id: str, item: dict, raw_response: dict) -> Metadata:
+    """Map a YouTube Data API v3 video item to Metadata model."""
+    snippet = item.get("snippet", {})
+    content_details = item.get("contentDetails", {})
+    statistics = item.get("statistics", {})
+
+    duration_iso = content_details.get("duration")
+    duration_seconds = _parse_iso8601_duration(duration_iso) if duration_iso else None
+
+    upload_date = snippet.get("publishedAt", "")[:10] or None
+
+    return Metadata(
+        video_id=video_id,
+        source_url=f"https://www.youtube.com/watch?v={video_id}",
+        title=snippet.get("title"),
+        channel_title=snippet.get("channelTitle"),
+        channel_id=snippet.get("channelId"),
+        upload_date=upload_date,
+        duration_seconds=duration_seconds,
+        description=snippet.get("description"),
+        tags=snippet.get("tags", []),
+        view_count=int(statistics["viewCount"]) if "viewCount" in statistics else None,
+        like_count=int(statistics["likeCount"]) if "likeCount" in statistics else None,
+        fetched_at=datetime.now(timezone.utc),
+        metadata_source="youtube-data-api",
+        raw=raw_response,
+    )
+
+
+def _parse_iso8601_duration(duration: str) -> float | None:
+    """Parse an ISO 8601 duration (e.g. PT4M13S) to seconds."""
+    import re
+
+    match = re.match(
+        r"^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$",
+        duration,
+    )
+    if not match:
+        return None
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    return float(hours * 3600 + minutes * 60 + seconds)

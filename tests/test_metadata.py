@@ -7,7 +7,13 @@ import pytest
 
 from yt_fetch.core.models import Metadata
 from yt_fetch.core.options import FetchOptions
-from yt_fetch.services.metadata import MetadataError, _map_yt_dlp_info, get_metadata
+from yt_fetch.services.metadata import (
+    MetadataError,
+    _map_yt_dlp_info,
+    _map_youtube_api_item,
+    _parse_iso8601_duration,
+    get_metadata,
+)
 
 
 SAMPLE_YT_DLP_INFO = {
@@ -164,7 +170,7 @@ class TestGetMetadata:
     @patch("yt_fetch.services.metadata._yt_dlp_backend")
     @patch("yt_fetch.services.metadata._youtube_api_backend")
     def test_api_failure_falls_back_to_yt_dlp(self, mock_api, mock_ydl):
-        mock_api.side_effect = NotImplementedError("not implemented")
+        mock_api.side_effect = MetadataError("API quota exceeded")
         mock_ydl.return_value = _map_yt_dlp_info("dQw4w9WgXcQ", SAMPLE_YT_DLP_INFO)
         options = FetchOptions(yt_api_key="test-key")
 
@@ -172,3 +178,179 @@ class TestGetMetadata:
         mock_api.assert_called_once()
         mock_ydl.assert_called_once_with("dQw4w9WgXcQ")
         assert result.video_id == "dQw4w9WgXcQ"
+
+
+# --- ISO 8601 Duration Parsing ---
+
+
+class TestParseIso8601Duration:
+    """Test _parse_iso8601_duration."""
+
+    def test_minutes_and_seconds(self):
+        assert _parse_iso8601_duration("PT4M13S") == 253.0
+
+    def test_hours_minutes_seconds(self):
+        assert _parse_iso8601_duration("PT1H2M3S") == 3723.0
+
+    def test_seconds_only(self):
+        assert _parse_iso8601_duration("PT30S") == 30.0
+
+    def test_minutes_only(self):
+        assert _parse_iso8601_duration("PT5M") == 300.0
+
+    def test_hours_only(self):
+        assert _parse_iso8601_duration("PT2H") == 7200.0
+
+    def test_invalid_format(self):
+        assert _parse_iso8601_duration("not a duration") is None
+
+    def test_empty_string(self):
+        assert _parse_iso8601_duration("") is None
+
+
+# --- YouTube API Item Mapping ---
+
+
+SAMPLE_API_RESPONSE = {
+    "items": [
+        {
+            "id": "dQw4w9WgXcQ",
+            "snippet": {
+                "title": "Rick Astley - Never Gonna Give You Up",
+                "channelTitle": "Rick Astley",
+                "channelId": "UCuAXFkgsw1L7xaCfnd5JJOw",
+                "publishedAt": "2009-10-25T06:57:33Z",
+                "description": "The official video",
+                "tags": ["rick", "astley"],
+            },
+            "contentDetails": {
+                "duration": "PT3M33S",
+            },
+            "statistics": {
+                "viewCount": "1500000000",
+                "likeCount": "15000000",
+            },
+        }
+    ]
+}
+
+
+class TestMapYoutubeApiItem:
+    """Test _map_youtube_api_item field mapping."""
+
+    def test_full_mapping(self):
+        item = SAMPLE_API_RESPONSE["items"][0]
+        m = _map_youtube_api_item("dQw4w9WgXcQ", item, SAMPLE_API_RESPONSE)
+        assert m.video_id == "dQw4w9WgXcQ"
+        assert m.title == "Rick Astley - Never Gonna Give You Up"
+        assert m.channel_title == "Rick Astley"
+        assert m.channel_id == "UCuAXFkgsw1L7xaCfnd5JJOw"
+        assert m.upload_date == "2009-10-25"
+        assert m.duration_seconds == 213.0
+        assert m.description == "The official video"
+        assert m.tags == ["rick", "astley"]
+        assert m.view_count == 1_500_000_000
+        assert m.like_count == 15_000_000
+        assert m.metadata_source == "youtube-data-api"
+        assert m.raw == SAMPLE_API_RESPONSE
+
+    def test_minimal_item(self):
+        item = {"id": "xxxxxxxxxxx", "snippet": {}, "contentDetails": {}, "statistics": {}}
+        m = _map_youtube_api_item("xxxxxxxxxxx", item, {"items": [item]})
+        assert m.video_id == "xxxxxxxxxxx"
+        assert m.title is None
+        assert m.channel_title is None
+        assert m.duration_seconds is None
+        assert m.view_count is None
+        assert m.tags == []
+
+    def test_missing_statistics(self):
+        item = {
+            "id": "abc",
+            "snippet": {"title": "Test"},
+            "contentDetails": {"duration": "PT1M"},
+        }
+        m = _map_youtube_api_item("abc", item, {"items": [item]})
+        assert m.view_count is None
+        assert m.like_count is None
+        assert m.duration_seconds == 60.0
+
+
+# --- YouTube API Backend ---
+
+
+class TestYoutubeApiBackend:
+    """Test _youtube_api_backend with mocked Google API client."""
+
+    @pytest.fixture(autouse=True)
+    def _mock_google_api(self):
+        """Inject fake googleapiclient modules into sys.modules."""
+        import sys
+        import types
+
+        mock_build = MagicMock()
+        self.mock_build = mock_build
+
+        fake_discovery = types.ModuleType("googleapiclient.discovery")
+        fake_discovery.build = mock_build
+
+        fake_errors = types.ModuleType("googleapiclient.errors")
+        fake_errors.HttpError = type("HttpError", (Exception,), {})
+
+        fake_googleapiclient = types.ModuleType("googleapiclient")
+        fake_googleapiclient.discovery = fake_discovery
+        fake_googleapiclient.errors = fake_errors
+
+        saved = {}
+        for mod_name in ("googleapiclient", "googleapiclient.discovery", "googleapiclient.errors"):
+            saved[mod_name] = sys.modules.get(mod_name)
+        sys.modules["googleapiclient"] = fake_googleapiclient
+        sys.modules["googleapiclient.discovery"] = fake_discovery
+        sys.modules["googleapiclient.errors"] = fake_errors
+
+        yield
+
+        for mod_name, original in saved.items():
+            if original is None:
+                sys.modules.pop(mod_name, None)
+            else:
+                sys.modules[mod_name] = original
+
+    def test_success(self):
+        mock_videos = MagicMock()
+        mock_list = MagicMock()
+        mock_list.execute.return_value = SAMPLE_API_RESPONSE
+        mock_videos.list.return_value = mock_list
+        mock_service = MagicMock()
+        mock_service.videos.return_value = mock_videos
+        self.mock_build.return_value = mock_service
+
+        from yt_fetch.services.metadata import _youtube_api_backend
+
+        result = _youtube_api_backend("dQw4w9WgXcQ", "fake-key")
+        assert isinstance(result, Metadata)
+        assert result.video_id == "dQw4w9WgXcQ"
+        assert result.metadata_source == "youtube-data-api"
+        self.mock_build.assert_called_once_with("youtube", "v3", developerKey="fake-key")
+
+    def test_video_not_found(self):
+        mock_videos = MagicMock()
+        mock_list = MagicMock()
+        mock_list.execute.return_value = {"items": []}
+        mock_videos.list.return_value = mock_list
+        mock_service = MagicMock()
+        mock_service.videos.return_value = mock_videos
+        self.mock_build.return_value = mock_service
+
+        from yt_fetch.services.metadata import _youtube_api_backend
+
+        with pytest.raises(MetadataError, match="Video not found via YouTube API"):
+            _youtube_api_backend("nonexistent11", "fake-key")
+
+    def test_api_error(self):
+        self.mock_build.side_effect = Exception("API key invalid")
+
+        from yt_fetch.services.metadata import _youtube_api_backend
+
+        with pytest.raises(MetadataError, match="YouTube API error"):
+            _youtube_api_backend("dQw4w9WgXcQ", "bad-key")

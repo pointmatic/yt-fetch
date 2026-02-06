@@ -100,13 +100,13 @@ Console and structured JSONL logging.
 - [x] Handle errors: video not found, private video, network failure
 - [x] Write unit tests with mocked yt-dlp responses
 
-### Story 4.3: v0.1.2 Metadata Retrieval (YouTube Data API v3, optional) [Planned]
+### Story 4.3: v0.1.2 Metadata Retrieval (YouTube Data API v3, optional) [Done]
 
-- [ ] Implement `_youtube_api_backend(video_id, api_key) -> dict` in `metadata.py`
-- [ ] Add `google-api-python-client` as optional dependency
-- [ ] Implement automatic fallback to yt-dlp backend on API failure
-- [ ] Guard behind `yt_api_key` option — skip if not configured
-- [ ] Write unit tests with mocked API responses
+- [x] Implement `_youtube_api_backend(video_id, api_key) -> dict` in `metadata.py`
+- [x] Add `google-api-python-client` as optional dependency
+- [x] Implement automatic fallback to yt-dlp backend on API failure
+- [x] Guard behind `yt_api_key` option — skip if not configured
+- [x] Write unit tests with mocked API responses
 
 ### Story 4.4: v0.1.3 Transcript Fetching [Planned]
 

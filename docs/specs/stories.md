@@ -28,24 +28,24 @@ Full package layout per tech_spec.md.
 - [x] Create `tests/integration/` directory
 - [x] Verify: package imports work (`from yt_fetch.core import models`)
 
-### Story 3.3: v0.0.3 Core Models and Options [Planned]
+### Story 3.3: v0.0.3 Core Models and Options [Done]
 
 Pydantic data models and settings.
 
-- [ ] Implement `yt_fetch/core/models.py`:
-  - [ ] `Metadata` model with all fields per tech_spec.md
-  - [ ] `TranscriptSegment` model
-  - [ ] `Transcript` model
-  - [ ] `FetchResult` model
-  - [ ] `BatchResult` model
-- [ ] Implement `yt_fetch/core/options.py`:
-  - [ ] `FetchOptions` Pydantic `BaseSettings` with all fields per tech_spec.md
-  - [ ] Environment variable prefix `YT_FETCH_`
-  - [ ] YAML config file support (`yt_fetch.yaml`)
-- [ ] Write `tests/test_models.py`:
-  - [ ] Validation tests for each model
-  - [ ] Serialization round-trip tests
-  - [ ] Default values tests for `FetchOptions`
+- [x] Implement `yt_fetch/core/models.py`:
+  - [x] `Metadata` model with all fields per tech_spec.md
+  - [x] `TranscriptSegment` model
+  - [x] `Transcript` model
+  - [x] `FetchResult` model
+  - [x] `BatchResult` model
+- [x] Implement `yt_fetch/core/options.py`:
+  - [x] `FetchOptions` Pydantic `BaseSettings` with all fields per tech_spec.md
+  - [x] Environment variable prefix `YT_FETCH_`
+  - [x] YAML config file support (`yt_fetch.yaml`)
+- [x] Write `tests/test_models.py`:
+  - [x] Validation tests for each model
+  - [x] Serialization round-trip tests
+  - [x] Default values tests for `FetchOptions`
 
 ### Story 3.4: Configuration System [Planned]
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yt-fetch"
-version = "0.0.1"
+version = "0.0.3"
 description = "YouTube video metadata, transcript, and media fetcher"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -17,6 +17,7 @@ dependencies = [
     "yt-dlp",
     "youtube-transcript-api",
     "pydantic>=2.0",
+    "pydantic-settings>=2.0",
     "click",
     "pyyaml",
     "rich",

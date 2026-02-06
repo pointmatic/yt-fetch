@@ -90,15 +90,15 @@ Console and structured JSONL logging.
   - [x] Deduplication preserves order
   - [x] File loading (text, CSV, JSONL)
 
-### Story 4.2: v0.1.1 Metadata Retrieval (yt-dlp) [Planned]
+### Story 4.2: v0.1.1 Metadata Retrieval (yt-dlp) [Done]
 
-- [ ] Implement `yt_fetch/services/metadata.py`:
-  - [ ] `get_metadata(video_id, options) -> Metadata`
-  - [ ] `_yt_dlp_backend(video_id) -> dict` — extract metadata via yt-dlp
-- [ ] Map yt-dlp raw output to `Metadata` model fields
-- [ ] Store raw payload in `Metadata.raw`
-- [ ] Handle errors: video not found, private video, network failure
-- [ ] Write unit tests with mocked yt-dlp responses
+- [x] Implement `yt_fetch/services/metadata.py`:
+  - [x] `get_metadata(video_id, options) -> Metadata`
+  - [x] `_yt_dlp_backend(video_id) -> dict` — extract metadata via yt-dlp
+- [x] Map yt-dlp raw output to `Metadata` model fields
+- [x] Store raw payload in `Metadata.raw`
+- [x] Handle errors: video not found, private video, network failure
+- [x] Write unit tests with mocked yt-dlp responses
 
 ### Story 4.3: v0.1.2 Metadata Retrieval (YouTube Data API v3, optional) [Planned]
 

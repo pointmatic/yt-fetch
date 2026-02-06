@@ -30,6 +30,8 @@ For YouTube Data API v3 support (optional):
 pip install -e ".[youtube-api]"
 ```
 
+> **Note:** The CLI command can be invoked as either `yt_fetch` or `yt-fetch`.
+
 ## Quick Start
 
 ### CLI

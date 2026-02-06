@@ -293,3 +293,8 @@ Console and structured JSONL logging.
   - [x] Re-run without `--force` skips completed work
   - [x] Transcript exports (.txt, .json, .vtt, .srt) are correct
   - [x] Errors are structured and do not crash the run
+
+### Story 8.3: v0.5.1 Hyphen or Underscore CLI Command [Done]
+
+- [x] Ensure `yt_fetch` and `yt-fetch` both work
+- [x] Correct license and add copyright/license headers to all files

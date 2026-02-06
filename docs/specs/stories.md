@@ -179,16 +179,16 @@ Console and structured JSONL logging.
   - [x] Re-run without `--force` skips work
   - [x] Re-run with `--force` overwrites
 
-### Story 5.4: v0.2.3 Batch Processing with Concurrency [Planned]
+### Story 5.4: v0.2.3 Batch Processing with Concurrency [Done]
 
-- [ ] Implement `process_batch(video_ids, options) -> BatchResult` in `pipeline.py`
-- [ ] Use `asyncio` with semaphore for concurrency (`--workers N`, default 3)
-- [ ] Per-video error isolation: one failure does not stop the batch
-- [ ] `--fail-fast` mode: stop on first error
-- [ ] Write batch tests:
-  - [ ] Mixed valid/invalid IDs
-  - [ ] Error isolation
-  - [ ] Fail-fast behavior
+- [x] Implement `process_batch(video_ids, options) -> BatchResult` in `pipeline.py`
+- [x] Use `asyncio` with semaphore for concurrency (`--workers N`, default 3)
+- [x] Per-video error isolation: one failure does not stop the batch
+- [x] `--fail-fast` mode: stop on first error
+- [x] Write batch tests:
+  - [x] Mixed valid/invalid IDs
+  - [x] Error isolation
+  - [x] Fail-fast behavior
 
 ### Story 5.5: v0.2.4 Error Handling and Retry [Planned]
 

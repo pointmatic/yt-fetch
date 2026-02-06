@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import Path
 
-from yt_fetch.core.models import FetchResult
+from yt_fetch.core.models import BatchResult, FetchResult
 from yt_fetch.core.options import FetchOptions
 from yt_fetch.core.writer import write_metadata, write_transcript_json
 from yt_fetch.services.media import download_media
@@ -111,4 +112,51 @@ def process_video(video_id: str, options: FetchOptions) -> FetchResult:
         metadata=metadata,
         transcript=transcript,
         errors=errors,
+    )
+
+
+def process_batch(video_ids: list[str], options: FetchOptions) -> BatchResult:
+    """Process multiple videos with concurrency.
+
+    Uses asyncio with a semaphore to limit concurrent workers.
+    Each video is processed in isolation — one failure does not stop others
+    unless --fail-fast is set.
+    """
+    return asyncio.run(_async_process_batch(video_ids, options))
+
+
+async def _async_process_batch(
+    video_ids: list[str], options: FetchOptions
+) -> BatchResult:
+    """Async batch processor with semaphore-based concurrency."""
+    semaphore = asyncio.Semaphore(options.workers)
+    results: list[FetchResult] = []
+    fail_fast_triggered = False
+
+    async def _worker(vid: str) -> FetchResult | None:
+        nonlocal fail_fast_triggered
+        if fail_fast_triggered:
+            return None
+        async with semaphore:
+            if fail_fast_triggered:
+                return None
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, process_video, vid, options)
+            if not result.success and options.fail_fast:
+                fail_fast_triggered = True
+            return result
+
+    tasks = [asyncio.create_task(_worker(vid)) for vid in video_ids]
+    completed = await asyncio.gather(*tasks)
+
+    results = [r for r in completed if r is not None]
+
+    succeeded = sum(1 for r in results if r.success)
+    failed = sum(1 for r in results if not r.success)
+
+    return BatchResult(
+        total=len(results),
+        succeeded=succeeded,
+        failed=failed,
+        results=results,
     )

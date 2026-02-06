@@ -1,0 +1,1 @@
+"""ffmpeg detection and helpers."""

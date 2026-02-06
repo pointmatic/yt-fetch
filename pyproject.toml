@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yt-fetch"
+version = "0.0.1"
+description = "YouTube video metadata, transcript, and media fetcher"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.14"
+authors = [
+    { name = "pointmatic" },
+]
+
+dependencies = [
+    "yt-dlp",
+    "youtube-transcript-api",
+    "pydantic>=2.0",
+    "click",
+    "pyyaml",
+    "rich",
+]
+
+[project.optional-dependencies]
+youtube-api = [
+    "google-api-python-client",
+]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
+
+[project.scripts]
+yt_fetch = "yt_fetch.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["yt_fetch*"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

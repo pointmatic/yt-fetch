@@ -1,0 +1,1 @@
+"""VTT/SRT timestamp formatting."""

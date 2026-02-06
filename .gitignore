@@ -1,0 +1,7 @@
+.DS_Store
+.venv
+.env
+.envrc
+__pycache__
+.pyve/testenv
+*.egg-info

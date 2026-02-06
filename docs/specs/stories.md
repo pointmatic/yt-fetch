@@ -124,16 +124,16 @@ Console and structured JSONL logging.
   - [x] Multiple language variants
 - [x] Write unit tests with mocked `youtube-transcript-api` responses
 
-### Story 4.5: v0.1.4 Media Download [Planned]
+### Story 4.5: v0.1.4 Media Download [Done]
 
-- [ ] Implement `yt_fetch/services/media.py`:
-  - [ ] `download_media(video_id, options, out_dir) -> MediaResult`
-  - [ ] `check_ffmpeg() -> bool`
-- [ ] Implement `yt_fetch/utils/ffmpeg.py` — ffmpeg detection helper
-- [ ] Download modes: `none`, `video`, `audio`, `both`
-- [ ] Respect `max_height` and format preferences
-- [ ] Handle missing ffmpeg: error or skip based on `ffmpeg_fallback` option
-- [ ] Write unit tests with mocked yt-dlp download calls
+- [x] Implement `yt_fetch/services/media.py`:
+  - [x] `download_media(video_id, options, out_dir) -> MediaResult`
+  - [x] `check_ffmpeg() -> bool`
+- [x] Implement `yt_fetch/utils/ffmpeg.py` — ffmpeg detection helper
+- [x] Download modes: `none`, `video`, `audio`, `both`
+- [x] Respect `max_height` and format preferences
+- [x] Handle missing ffmpeg: error or skip based on `ffmpeg_fallback` option
+- [x] Write unit tests with mocked yt-dlp download calls
 
 ---
 

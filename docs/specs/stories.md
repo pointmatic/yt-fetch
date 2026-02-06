@@ -190,14 +190,14 @@ Console and structured JSONL logging.
   - [x] Error isolation
   - [x] Fail-fast behavior
 
-### Story 5.5: v0.2.4 Error Handling and Retry [Planned]
+### Story 5.5: v0.2.4 Error Handling and Retry [Done]
 
-- [ ] Implement `yt_fetch/utils/retry.py`:
-  - [ ] Exponential backoff with jitter (base 1s, multiplier 2x, jitter ±25%)
-  - [ ] Configurable max retries (default 3)
-  - [ ] Applies to network errors, HTTP 429/5xx
-- [ ] Apply retry decorator to metadata, transcript, and media service calls
-- [ ] Write retry tests with simulated failures
+- [x] Implement `yt_fetch/utils/retry.py`:
+  - [x] Exponential backoff with jitter (base 1s, multiplier 2x, jitter ±25%)
+  - [x] Configurable max retries (default 3)
+  - [x] Applies to network errors, HTTP 429/5xx
+- [x] Apply retry decorator to metadata, transcript, and media service calls
+- [x] Write retry tests with simulated failures
 
 ### Story 5.6: v0.2.5 Rate Limiting [Planned]
 

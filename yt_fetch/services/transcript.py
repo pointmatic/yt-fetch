@@ -10,6 +10,7 @@ from youtube_transcript_api import TranscriptsDisabled
 
 from yt_fetch.core.models import Transcript, TranscriptSegment
 from yt_fetch.core.options import FetchOptions
+from yt_fetch.utils.retry import retry
 
 logger = logging.getLogger("yt_fetch")
 
@@ -22,6 +23,7 @@ class TranscriptNotFound(TranscriptError):
     """No transcript available for the requested languages."""
 
 
+@retry(retryable=(TranscriptError,))
 def get_transcript(video_id: str, options: FetchOptions) -> Transcript:
     """Fetch a transcript for a video using the configured language preferences.
 

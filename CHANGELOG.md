@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] — 2026-02-06
+
+### Added
+- `yt-fetch` (hyphenated) CLI entry point — both `yt_fetch` and `yt-fetch` now work
+- MPL-2.0 copyright and license header on all Python source files
+- LLM project guide (`docs/guides/project_guide.md`)
+
+### Fixed
+- License mismatch: `README.md` and `pyproject.toml` incorrectly listed GPL-3.0-or-later; corrected to MPL-2.0 to match `LICENSE` file
+
+## [0.5.0] — 2025-02-06
+
+### Added
+- `README.md` with project description, features, installation, usage, configuration reference, and library API examples
+- `CHANGELOG.md`
+- Final acceptance testing and code cleanup
+
 ## [0.4.2] — 2025-02-06
 
 ### Added

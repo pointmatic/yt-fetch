@@ -7,6 +7,7 @@ from pathlib import Path
 import click
 
 from yt_fetch import __version__
+from yt_fetch.core.logging import setup_logging, get_logger
 from yt_fetch.core.options import FetchOptions
 
 
@@ -70,7 +71,10 @@ def cli() -> None:
 def fetch(ids, file_path, jsonl_path, id_field, **kwargs):
     """Fetch metadata, transcripts, and optionally media."""
     options = _build_options(**kwargs)
-    click.echo(f"Options resolved: out={options.out}, workers={options.workers}, verbose={options.verbose}")
+    setup_logging(verbose=options.verbose)
+    log = get_logger()
+    log.debug("Options resolved: %s", options.model_dump())
+    log.info("Starting fetch for %d ID(s)", len(ids))
 
 
 @cli.command()
@@ -80,7 +84,10 @@ def fetch(ids, file_path, jsonl_path, id_field, **kwargs):
 def transcript(ids, file_path, **kwargs):
     """Fetch transcripts only."""
     options = _build_options(**kwargs)
-    click.echo(f"Options resolved: out={options.out}, verbose={options.verbose}")
+    setup_logging(verbose=options.verbose)
+    log = get_logger()
+    log.debug("Options resolved: %s", options.model_dump())
+    log.info("Starting transcript fetch for %d ID(s)", len(ids))
 
 
 @cli.command()
@@ -90,7 +97,10 @@ def transcript(ids, file_path, **kwargs):
 def metadata(ids, file_path, **kwargs):
     """Fetch metadata only."""
     options = _build_options(**kwargs)
-    click.echo(f"Options resolved: out={options.out}, verbose={options.verbose}")
+    setup_logging(verbose=options.verbose)
+    log = get_logger()
+    log.debug("Options resolved: %s", options.model_dump())
+    log.info("Starting metadata fetch for %d ID(s)", len(ids))
 
 
 @cli.command()
@@ -100,7 +110,10 @@ def metadata(ids, file_path, **kwargs):
 def media(ids, file_path, **kwargs):
     """Download media only."""
     options = _build_options(**kwargs)
-    click.echo(f"Options resolved: out={options.out}, download={options.download}, verbose={options.verbose}")
+    setup_logging(verbose=options.verbose)
+    log = get_logger()
+    log.debug("Options resolved: %s", options.model_dump())
+    log.info("Starting media download for %d ID(s)", len(ids))
 
 
 if __name__ == "__main__":

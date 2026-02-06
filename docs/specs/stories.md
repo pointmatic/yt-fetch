@@ -56,15 +56,15 @@ CLI flags, env vars, and YAML config file integration.
 - [x] Create a sample `yt_fetch.yaml.example` file
 - [x] Verify: CLI flag overrides env var overrides YAML overrides default
 
-### Story 3.5: v0.0.5 Logging Framework [Planned]
+### Story 3.5: v0.0.5 Logging Framework [Done]
 
 Console and structured JSONL logging.
 
-- [ ] Implement `yt_fetch/core/logging.py`:
-  - [ ] Console logger using `rich` (concise by default, verbose with `--verbose`)
-  - [ ] Structured JSONL logger with fields: `timestamp`, `level`, `video_id`, `event`, `details`, `error`
-- [ ] Wire logging into CLI (respect `--verbose` flag)
-- [ ] Verify: console output is clean; JSONL output is valid JSON per line
+- [x] Implement `yt_fetch/core/logging.py`:
+  - [x] Console logger using `rich` (concise by default, verbose with `--verbose`)
+  - [x] Structured JSONL logger with fields: `timestamp`, `level`, `video_id`, `event`, `details`, `error`
+- [x] Wire logging into CLI (respect `--verbose` flag)
+- [x] Verify: console output is clean; JSONL output is valid JSON per line
 
 ---
 

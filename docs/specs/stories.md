@@ -199,14 +199,14 @@ Console and structured JSONL logging.
 - [x] Apply retry decorator to metadata, transcript, and media service calls
 - [x] Write retry tests with simulated failures
 
-### Story 5.6: v0.2.5 Rate Limiting [Planned]
+### Story 5.6: v0.2.5 Rate Limiting [Done]
 
-- [ ] Implement `yt_fetch/utils/rate_limit.py`:
-  - [ ] Token bucket algorithm
-  - [ ] Configurable rate (default 2 RPS)
-  - [ ] Thread-safe, shared across all workers
-- [ ] Integrate rate limiter into pipeline before each external call
-- [ ] Write rate limiter unit tests
+- [x] Implement `yt_fetch/utils/rate_limit.py`:
+  - [x] Token bucket algorithm
+  - [x] Configurable rate (default 2 RPS)
+  - [x] Thread-safe, shared across all workers
+- [x] Integrate rate limiter into pipeline before each external call
+- [x] Write rate limiter unit tests
 
 ### Story 5.7: v0.2.6 Summary Reporting [Planned]
 

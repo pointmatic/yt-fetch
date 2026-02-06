@@ -12,11 +12,16 @@ from yt_fetch.core.writer import write_metadata, write_transcript_json
 from yt_fetch.services.media import download_media
 from yt_fetch.services.metadata import MetadataError, get_metadata
 from yt_fetch.services.transcript import TranscriptError, get_transcript
+from yt_fetch.utils.rate_limit import TokenBucket
 
 logger = logging.getLogger("yt_fetch")
 
 
-def process_video(video_id: str, options: FetchOptions) -> FetchResult:
+def process_video(
+    video_id: str,
+    options: FetchOptions,
+    rate_limiter: TokenBucket | None = None,
+) -> FetchResult:
     """Run the full fetch pipeline for a single video.
 
     Steps:
@@ -47,6 +52,8 @@ def process_video(video_id: str, options: FetchOptions) -> FetchResult:
 
     if should_fetch_metadata:
         try:
+            if rate_limiter:
+                rate_limiter.acquire()
             metadata = get_metadata(video_id, options)
             metadata_path = write_metadata(metadata, out_dir)
             logger.info("Wrote metadata for %s", video_id)
@@ -67,6 +74,8 @@ def process_video(video_id: str, options: FetchOptions) -> FetchResult:
 
     if should_fetch_transcript:
         try:
+            if rate_limiter:
+                rate_limiter.acquire()
             transcript = get_transcript(video_id, options)
             transcript_path = write_transcript_json(transcript, out_dir)
             logger.info("Wrote transcript for %s", video_id)
@@ -89,6 +98,8 @@ def process_video(video_id: str, options: FetchOptions) -> FetchResult:
 
         if should_download_media:
             try:
+                if rate_limiter:
+                    rate_limiter.acquire()
                 result = download_media(video_id, options, out_dir)
                 media_paths = result.paths
                 if result.errors:
@@ -121,12 +132,14 @@ def process_batch(video_ids: list[str], options: FetchOptions) -> BatchResult:
     Uses asyncio with a semaphore to limit concurrent workers.
     Each video is processed in isolation — one failure does not stop others
     unless --fail-fast is set.
+    A shared TokenBucket rate limiter is used across all workers.
     """
-    return asyncio.run(_async_process_batch(video_ids, options))
+    rate_limiter = TokenBucket(rate=options.rate_limit)
+    return asyncio.run(_async_process_batch(video_ids, options, rate_limiter))
 
 
 async def _async_process_batch(
-    video_ids: list[str], options: FetchOptions
+    video_ids: list[str], options: FetchOptions, rate_limiter: TokenBucket
 ) -> BatchResult:
     """Async batch processor with semaphore-based concurrency."""
     semaphore = asyncio.Semaphore(options.workers)
@@ -141,7 +154,9 @@ async def _async_process_batch(
             if fail_fast_triggered:
                 return None
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, process_video, vid, options)
+            result = await loop.run_in_executor(
+                None, process_video, vid, options, rate_limiter,
+            )
             if not result.success and options.fail_fast:
                 fail_fast_triggered = True
             return result

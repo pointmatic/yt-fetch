@@ -272,15 +272,15 @@ Console and structured JSONL logging.
 
 ## Phase 8: Documentation & Release
 
-### Story 8.1: README and Documentation [Planned]
+### Story 8.1: README and Documentation [Done]
 
-- [ ] Create `README.md` with:
-  - [ ] Project description and features
-  - [ ] Installation instructions
-  - [ ] Quick start / usage examples
-  - [ ] Configuration reference
-  - [ ] Library API usage
-- [ ] Create `CHANGELOG.md`
+- [x] Create `README.md` with:
+  - [x] Project description and features
+  - [x] Installation instructions
+  - [x] Quick start / usage examples
+  - [x] Configuration reference
+  - [x] Library API usage
+- [x] Create `CHANGELOG.md`
 
 ### Story 8.2: v0.5.0 Final Testing and Refinement [Planned]
 

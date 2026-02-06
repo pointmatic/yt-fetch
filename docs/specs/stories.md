@@ -152,22 +152,22 @@ Console and structured JSONL logging.
   - [x] Return structured `FetchResult`
 - [x] Write `tests/test_pipeline.py` with mocked services
 
-### Story 5.2: v0.2.1 Output File Writing [Planned]
+### Story 5.2: v0.2.1 Output File Writing [Done]
 
-- [ ] Implement `yt_fetch/core/writer.py`:
-  - [ ] `write_metadata(metadata, out_dir) -> Path`
-  - [ ] `write_transcript_json(transcript, out_dir) -> Path`
-  - [ ] `write_transcript_txt(transcript, out_dir) -> Path` — plain text, no timestamps
-  - [ ] `write_transcript_vtt(transcript, out_dir) -> Path`
-  - [ ] `write_transcript_srt(transcript, out_dir) -> Path`
-  - [ ] `write_summary(results, out_dir) -> Path`
-- [ ] Implement `yt_fetch/utils/time_fmt.py` — VTT/SRT timestamp formatting
-- [ ] All writes are atomic: write to `.tmp`, then `os.rename()`
-- [ ] Write `tests/test_writer.py`:
-  - [ ] Verify JSON output structure
-  - [ ] Verify transcript.txt has no timestamps
-  - [ ] Verify VTT/SRT timestamp formatting correctness
-- [ ] Write `tests/test_transcript_format.py` for timestamp edge cases
+- [x] Implement `yt_fetch/core/writer.py`:
+  - [x] `write_metadata(metadata, out_dir) -> Path`
+  - [x] `write_transcript_json(transcript, out_dir) -> Path`
+  - [x] `write_transcript_txt(transcript, out_dir) -> Path` — plain text, no timestamps
+  - [x] `write_transcript_vtt(transcript, out_dir) -> Path`
+  - [x] `write_transcript_srt(transcript, out_dir) -> Path`
+  - [x] `write_summary(results, out_dir) -> Path`
+- [x] Implement `yt_fetch/utils/time_fmt.py` — VTT/SRT timestamp formatting
+- [x] All writes are atomic: write to `.tmp`, then `os.rename()`
+- [x] Write `tests/test_writer.py`:
+  - [x] Verify JSON output structure
+  - [x] Verify transcript.txt has no timestamps
+  - [x] Verify VTT/SRT timestamp formatting correctness
+- [x] Write `tests/test_transcript_format.py` for timestamp edge cases
 
 ### Story 5.3: v0.2.2 Caching and Idempotency [Planned]
 

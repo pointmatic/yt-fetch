@@ -179,4 +179,4 @@ RUN_INTEGRATION=1 python -m pytest tests/integration/
 
 ## License
 
-GPL-3.0-or-later
+MPL-2.0

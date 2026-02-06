@@ -222,17 +222,17 @@ Console and structured JSONL logging.
 
 ## Phase 6: CLI & Library API
 
-### Story 6.1: v0.3.0 CLI Subcommands [Planned]
+### Story 6.1: v0.3.0 CLI Subcommands [Done]
 
-- [ ] Implement Click subcommands in `yt_fetch/cli.py`:
-  - [ ] `yt_fetch fetch` — full pipeline (metadata + transcript + media)
-  - [ ] `yt_fetch transcript` — transcript only
-  - [ ] `yt_fetch metadata` — metadata only
-  - [ ] `yt_fetch media` — media download only
-- [ ] Shared input flags: `--id`, `--file`, `--jsonl` + `--id-field`
-- [ ] All option flags per features.md (--out, --languages, --download, etc.)
-- [ ] Exit codes: 0 (success), 1 (generic error), 2 (partial failure + --strict), 3 (all failed)
-- [ ] Write `tests/test_cli.py` — smoke tests for each subcommand
+- [x] Implement Click subcommands in `yt_fetch/cli.py`:
+  - [x] `yt_fetch fetch` — full pipeline (metadata + transcript + media)
+  - [x] `yt_fetch transcript` — transcript only
+  - [x] `yt_fetch metadata` — metadata only
+  - [x] `yt_fetch media` — media download only
+- [x] Shared input flags: `--id`, `--file`, `--jsonl` + `--id-field`
+- [x] All option flags per features.md (--out, --languages, --download, etc.)
+- [x] Exit codes: 0 (success), 1 (generic error), 2 (partial failure + --strict), 3 (all failed)
+- [x] Write `tests/test_cli.py` — smoke tests for each subcommand
 
 ### Story 6.2: v0.3.0 Library API [Planned]
 

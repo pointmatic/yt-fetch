@@ -108,21 +108,21 @@ Console and structured JSONL logging.
 - [x] Guard behind `yt_api_key` option — skip if not configured
 - [x] Write unit tests with mocked API responses
 
-### Story 4.4: v0.1.3 Transcript Fetching [Planned]
+### Story 4.4: v0.1.3 Transcript Fetching [Done]
 
-- [ ] Implement `yt_fetch/services/transcript.py`:
-  - [ ] `get_transcript(video_id, options) -> Transcript`
-  - [ ] `list_available_transcripts(video_id) -> list[TranscriptInfo]`
-- [ ] Language selection algorithm:
-  - [ ] Try preferred languages in order
-  - [ ] Prefer manual over generated (when `allow_generated` is false)
-  - [ ] Fall back to any language (when `allow_any_language` is true)
-  - [ ] Return structured `TRANSCRIPT_NOT_FOUND` error when none available
-- [ ] Edge cases:
-  - [ ] Video has no transcript
-  - [ ] Transcripts blocked by region/permissions
-  - [ ] Multiple language variants
-- [ ] Write unit tests with mocked `youtube-transcript-api` responses
+- [x] Implement `yt_fetch/services/transcript.py`:
+  - [x] `get_transcript(video_id, options) -> Transcript`
+  - [x] `list_available_transcripts(video_id) -> list[TranscriptInfo]`
+- [x] Language selection algorithm:
+  - [x] Try preferred languages in order
+  - [x] Prefer manual over generated (when `allow_generated` is false)
+  - [x] Fall back to any language (when `allow_any_language` is true)
+  - [x] Return structured `TRANSCRIPT_NOT_FOUND` error when none available
+- [x] Edge cases:
+  - [x] Video has no transcript
+  - [x] Transcripts blocked by region/permissions
+  - [x] Multiple language variants
+- [x] Write unit tests with mocked `youtube-transcript-api` responses
 
 ### Story 4.5: v0.1.4 Media Download [Planned]
 

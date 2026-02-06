@@ -246,11 +246,11 @@ Console and structured JSONL logging.
 
 ## Phase 7: Testing & Quality
 
-### Story 7.1: v0.4.0 Unit Test Suite [Planned]
+### Story 7.1: v0.4.0 Unit Test Suite [Done]
 
-- [ ] Ensure all unit tests pass: ID parsing, models, transcript formatting, writer, rate limiter
-- [ ] Achieve meaningful coverage across core modules
-- [ ] All tests run without network access
+- [x] Ensure all unit tests pass: ID parsing, models, transcript formatting, writer, rate limiter
+- [x] Achieve meaningful coverage across core modules (96% overall)
+- [x] All tests run without network access
 
 ### Story 7.2: v0.4.1 Integration Tests [Planned]
 
@@ -272,7 +272,7 @@ Console and structured JSONL logging.
 
 ## Phase 8: Documentation & Release
 
-### Story 8.1: v0.5.0 README and Documentation [Planned]
+### Story 8.1: README and Documentation [Planned]
 
 - [ ] Create `README.md` with:
   - [ ] Project description and features
@@ -282,7 +282,7 @@ Console and structured JSONL logging.
   - [ ] Library API usage
 - [ ] Create `CHANGELOG.md`
 
-### Story 8.2: v0.5.1 Final Testing and Refinement [Planned]
+### Story 8.2: v0.5.0 Final Testing and Refinement [Planned]
 
 - [ ] Run full test suite (unit + integration)
 - [ ] Fix any remaining bugs

@@ -182,3 +182,71 @@ class TestCliMedia:
             "media", "--id", "dQw4w9WgXcQ", "--out", str(tmp_path),
         ])
         assert result.exit_code == EXIT_OK
+
+    @patch("yt_fetch.services.media.download_media")
+    def test_media_error(self, mock_dl, tmp_path):
+        from yt_fetch.services.media import MediaError
+        mock_dl.side_effect = MediaError("download failed")
+
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "media", "--id", "dQw4w9WgXcQ", "--out", str(tmp_path),
+        ])
+        assert result.exit_code == EXIT_ALL_FAILED
+
+    @patch("yt_fetch.services.media.download_media")
+    def test_media_skipped(self, mock_dl, tmp_path):
+        mock_dl.return_value = MediaResult(
+            video_id="dQw4w9WgXcQ", skipped=True, errors=["no ffmpeg"],
+        )
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "media", "--id", "dQw4w9WgXcQ", "--out", str(tmp_path),
+        ])
+        assert result.exit_code == EXIT_OK
+
+
+class TestCliTranscriptError:
+    @patch("yt_fetch.services.transcript.get_transcript")
+    def test_transcript_error(self, mock_get, tmp_path):
+        from yt_fetch.services.transcript import TranscriptError
+        mock_get.side_effect = TranscriptError("not found")
+
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "transcript", "--id", "dQw4w9WgXcQ", "--out", str(tmp_path),
+        ])
+        assert result.exit_code == EXIT_ALL_FAILED
+
+
+class TestCliMetadataError:
+    @patch("yt_fetch.services.metadata.get_metadata")
+    def test_metadata_error(self, mock_get, tmp_path):
+        from yt_fetch.services.metadata import MetadataError
+        mock_get.side_effect = MetadataError("not found")
+
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "metadata", "--id", "dQw4w9WgXcQ", "--out", str(tmp_path),
+        ])
+        assert result.exit_code == EXIT_ALL_FAILED
+
+
+class TestBuildOptions:
+    def test_format_option(self):
+        from yt_fetch.cli import _build_options
+        opts = _build_options(format_="mp4")
+        assert opts.format == "mp4"
+
+    def test_languages_option(self):
+        from yt_fetch.cli import _build_options
+        opts = _build_options(languages="en, fr, de")
+        assert opts.languages == ["en", "fr", "de"]
+
+
+class TestCollectIdsJsonl:
+    def test_from_jsonl(self, tmp_path):
+        f = tmp_path / "ids.jsonl"
+        f.write_text('{"id": "dQw4w9WgXcQ"}\n{"id": "abc12345678"}\n')
+        result = _collect_ids((), None, f, "id")
+        assert len(result) == 2

@@ -155,6 +155,7 @@ Behavior:
   - any available language (configurable)
   - generated transcript if human transcript not available (configurable)
 - If transcripts are disabled for a video, store a structured error in output.
+- When transcript fetch fails for the requested language, report the available languages in the error message and in `result.errors` so callers can provide actionable feedback.
 
 Edge cases:
 - Video has no transcript
@@ -175,7 +176,8 @@ Requirements:
   - skip conversion and store original format (configurable)
 
 ### 5) Caching / idempotency
-- If output files already exist, default behavior should skip work unless `--force`.
+- If output files already exist, default behavior should skip re-fetching from the network unless `--force`.
+- When cached files exist and the result is returned via the library API, the in-memory objects (`result.metadata`, `result.transcript`) must still be populated by reading from the cached files.
 - Allow selective force:
   - `--force-metadata`
   - `--force-transcript`
@@ -237,9 +239,14 @@ Expose a Python API so other code can do:
 
 Where results include:
 - paths written
-- metadata object (optional)
-- transcript object (optional)
+- metadata object (always populated on success, even when read from cache)
+- transcript object (always populated when available, even when read from cache)
 - error list
+
+The library API must behave identically to the CLI for the same inputs. In particular:
+- `result.metadata` must always be populated when metadata is available, regardless of `force_metadata` or caching state.
+- `result.transcript` must always be populated when a transcript is available, regardless of `force_transcript` or caching state.
+- When a transcript is not available, `result.errors` must contain a descriptive message (e.g., available languages) so the caller can distinguish "no captions" from "not fetched."
 
 ---
 

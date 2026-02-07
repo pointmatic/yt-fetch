@@ -9,12 +9,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import tempfile
 from pathlib import Path
 
 from yt_fetch.core.models import BatchResult, Metadata, Transcript
 from yt_fetch.utils.time_fmt import seconds_to_srt, seconds_to_vtt
+
+logger = logging.getLogger("yt_fetch")
 
 
 def write_metadata(metadata: Metadata, out_dir: Path) -> Path:
@@ -24,6 +27,38 @@ def write_metadata(metadata: Metadata, out_dir: Path) -> Path:
     dest = video_dir / "metadata.json"
     _atomic_write_json(dest, metadata.model_dump(mode="json"))
     return dest
+
+
+def read_metadata(out_dir: Path, video_id: str) -> Metadata | None:
+    """Read cached metadata.json and return a Metadata model.
+
+    Returns None if the file does not exist or cannot be parsed.
+    """
+    path = Path(out_dir) / video_id / "metadata.json"
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return Metadata.model_validate(data)
+    except Exception as exc:
+        logger.warning("Failed to read cached metadata for %s: %s", video_id, exc)
+        return None
+
+
+def read_transcript_json(out_dir: Path, video_id: str) -> Transcript | None:
+    """Read cached transcript.json and return a Transcript model.
+
+    Returns None if the file does not exist or cannot be parsed.
+    """
+    path = Path(out_dir) / video_id / "transcript.json"
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return Transcript.model_validate(data)
+    except Exception as exc:
+        logger.warning("Failed to read cached transcript for %s: %s", video_id, exc)
+        return None
 
 
 def write_transcript_json(transcript: Transcript, out_dir: Path) -> Path:

@@ -19,6 +19,8 @@ from yt_fetch.core.models import (
     TranscriptSegment,
 )
 from yt_fetch.core.writer import (
+    read_metadata,
+    read_transcript_json,
     write_metadata,
     write_summary,
     write_transcript_json,
@@ -85,6 +87,65 @@ class TestWriteMetadata:
         path = write_metadata(meta2, tmp_path)
         data = json.loads(path.read_text())
         assert data["title"] == "Updated"
+
+
+# --- read_metadata ---
+
+
+class TestReadMetadata:
+    def test_round_trip(self, tmp_path):
+        meta = _make_metadata()
+        write_metadata(meta, tmp_path)
+        loaded = read_metadata(tmp_path, "dQw4w9WgXcQ")
+        assert loaded is not None
+        assert loaded.video_id == "dQw4w9WgXcQ"
+        assert loaded.title == "Test Video"
+        assert loaded.metadata_source == "yt-dlp"
+        assert loaded.tags == ["test"]
+
+    def test_missing_file_returns_none(self, tmp_path):
+        loaded = read_metadata(tmp_path, "nonexistent")
+        assert loaded is None
+
+    def test_invalid_json_returns_none(self, tmp_path):
+        video_dir = tmp_path / "bad"
+        video_dir.mkdir()
+        (video_dir / "metadata.json").write_text("not json")
+        loaded = read_metadata(tmp_path, "bad")
+        assert loaded is None
+
+    def test_incomplete_json_returns_none(self, tmp_path):
+        video_dir = tmp_path / "bad2"
+        video_dir.mkdir()
+        (video_dir / "metadata.json").write_text('{"video_id": "bad2"}')
+        loaded = read_metadata(tmp_path, "bad2")
+        assert loaded is None
+
+
+# --- read_transcript_json ---
+
+
+class TestReadTranscriptJson:
+    def test_round_trip(self, tmp_path):
+        trans = _make_transcript()
+        write_transcript_json(trans, tmp_path)
+        loaded = read_transcript_json(tmp_path, "dQw4w9WgXcQ")
+        assert loaded is not None
+        assert loaded.video_id == "dQw4w9WgXcQ"
+        assert loaded.language == "en"
+        assert len(loaded.segments) == 3
+        assert loaded.segments[0].text == "Hello world"
+
+    def test_missing_file_returns_none(self, tmp_path):
+        loaded = read_transcript_json(tmp_path, "nonexistent")
+        assert loaded is None
+
+    def test_invalid_json_returns_none(self, tmp_path):
+        video_dir = tmp_path / "bad"
+        video_dir.mkdir()
+        (video_dir / "transcript.json").write_text("not json")
+        loaded = read_transcript_json(tmp_path, "bad")
+        assert loaded is None
 
 
 # --- write_transcript_json ---

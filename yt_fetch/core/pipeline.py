@@ -15,6 +15,8 @@ from pathlib import Path
 from yt_fetch.core.models import BatchResult, FetchResult
 from yt_fetch.core.options import FetchOptions
 from yt_fetch.core.writer import (
+    read_metadata,
+    read_transcript_json,
     write_metadata,
     write_summary,
     write_transcript_json,
@@ -75,6 +77,7 @@ def process_video(
             errors.append(f"metadata: {exc}")
     else:
         metadata_path = metadata_path_candidate
+        metadata = read_metadata(out_dir, video_id)
         logger.debug("Skipping metadata for %s (cached)", video_id)
 
     # --- Transcript ---
@@ -100,6 +103,7 @@ def process_video(
             errors.append(f"transcript: {exc}")
     else:
         transcript_path = transcript_path_candidate
+        transcript = read_transcript_json(out_dir, video_id)
         logger.debug("Skipping transcript for %s (cached)", video_id)
 
     # --- Media ---
@@ -129,7 +133,8 @@ def process_video(
             media_paths = list(media_dir.iterdir()) if media_dir.exists() else []
             logger.debug("Skipping media for %s (cached)", video_id)
 
-    success = len(errors) == 0
+    metadata_failed = any(e.startswith("metadata:") for e in errors)
+    success = not metadata_failed
     return FetchResult(
         video_id=video_id,
         success=success,

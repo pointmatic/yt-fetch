@@ -298,3 +298,40 @@ Console and structured JSONL logging.
 
 - [x] Ensure `yt_fetch` and `yt-fetch` both work
 - [x] Correct license and add copyright/license headers to all files
+
+### Story F.d: v0.5.2 Bugfixes and API Feature Improvements [Done]
+
+Bug 1 & 2: Pipeline must always populate in-memory metadata/transcript objects.
+Bug 3: Transcript failures must be reported in result.errors.
+Issue 4: CLI and library API must behave identically.
+Feature Requests: Report available languages on transcript failure.
+
+- [x] Add `read_metadata(out_dir, video_id) -> Metadata | None` to `core/writer.py`
+  - [x] Read and parse `<out_dir>/<video_id>/metadata.json` into a `Metadata` model
+  - [x] Return `None` if file does not exist or is unparseable
+- [x] Add `read_transcript_json(out_dir, video_id) -> Transcript | None` to `core/writer.py`
+  - [x] Read and parse `<out_dir>/<video_id>/transcript.json` into a `Transcript` model
+  - [x] Return `None` if file does not exist or is unparseable
+- [x] Fix `process_video()` in `core/pipeline.py` — metadata cache branch
+  - [x] When metadata is cached (skip fetch), call `read_metadata()` to populate the in-memory `metadata` object
+  - [x] Assign the loaded `Metadata` to `FetchResult.metadata`
+- [x] Fix `process_video()` in `core/pipeline.py` — transcript cache branch
+  - [x] When transcript is cached (skip fetch), call `read_transcript_json()` to populate the in-memory `transcript` object
+  - [x] Assign the loaded `Transcript` to `FetchResult.transcript`
+- [x] Fix error reporting when transcript is unavailable
+  - [x] When `get_transcript()` raises `TranscriptError`, probe for available languages and include them in the error message
+  - [x] Append a descriptive warning to `result.errors` (e.g., `"No transcript in ['en']; available: ['es', 'fr']"`)
+  - [x] Keep `result.success = True` when metadata succeeded but transcript failed (partial failure)
+- [x] Update `FetchResult` success logic in `core/pipeline.py`
+  - [x] `success` should be `False` only when metadata fetch fails (critical failure)
+  - [x] Transcript absence is a warning, not a failure — append to `errors` but do not set `success = False`
+- [x] Write/update unit tests
+  - [x] Test `read_metadata()` round-trip: write then read back
+  - [x] Test `read_transcript_json()` round-trip: write then read back
+  - [x] Test pipeline populates `result.metadata` from cache (no force flag)
+  - [x] Test pipeline populates `result.transcript` from cache (no force flag)
+  - [x] Test `result.errors` contains descriptive message when transcript unavailable
+  - [x] Test `result.success` is `True` when metadata succeeds but transcript fails
+- [x] Update `features.md`, `tech_spec.md` to reflect the changes
+- [x] Verify: `fetch_video("dQw4w9WgXcQ", FetchOptions(download="none"))` returns non-None `metadata` and `transcript` on both first run and cached re-run
+- [x] Bump version to `0.5.2` in `__init__.py` and `pyproject.toml`

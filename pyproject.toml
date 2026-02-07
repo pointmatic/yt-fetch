@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yt-fetch"
-version = "0.5.1"
+version = "0.5.2"
 description = "YouTube video metadata, transcript, and media fetcher"
 readme = "README.md"
 license = "MPL-2.0"

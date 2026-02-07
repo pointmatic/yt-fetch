@@ -107,7 +107,11 @@ class TestBatchTranscriptErrors:
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
     def test_transcript_error_isolated(self, mock_meta, mock_trans, tmp_path):
-        """A transcript error for one video should not affect others."""
+        """A transcript error for one video should not affect others.
+
+        Transcript-only failures are warnings (success=True) since metadata
+        succeeded. The error is still recorded in result.errors.
+        """
         mock_meta.side_effect = lambda vid, opts: _make_metadata(vid)
 
         def trans_side(vid, opts):
@@ -121,15 +125,15 @@ class TestBatchTranscriptErrors:
         result = process_batch(["vid_aaaaaaa", "bad_trans_aaa", "vid_bbbbbbb"], opts)
 
         assert result.total == 3
-        # bad_trans_aaa has errors but metadata still succeeded
+        # bad_trans_aaa: metadata succeeded so success=True, but transcript error recorded
         bad = [r for r in result.results if r.video_id == "bad_trans_aaa"]
         assert len(bad) == 1
-        assert bad[0].success is False
+        assert bad[0].success is True
         assert any("transcript" in e for e in bad[0].errors)
 
-        # Other videos should succeed
+        # All videos should succeed (transcript failure is a warning)
         good = [r for r in result.results if r.success]
-        assert len(good) == 2
+        assert len(good) == 3
 
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
@@ -154,19 +158,22 @@ class TestFailFastTranscript:
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
     def test_fail_fast_on_transcript_error(self, mock_meta, mock_trans, tmp_path):
-        """Fail-fast should trigger on transcript errors too."""
-        mock_meta.side_effect = lambda vid, opts: _make_metadata(vid)
+        """Fail-fast should trigger on metadata errors (critical failures).
 
-        def trans_side(vid, opts):
-            if vid == "bad_trans_aaa":
-                raise TranscriptError("fail")
-            return _make_transcript(vid)
+        Transcript-only failures are warnings and do not trigger fail-fast.
+        A metadata failure sets success=False and triggers early termination.
+        """
+        def meta_side(vid, opts):
+            if vid == "bad_meta_aaa":
+                raise MetadataError("fail")
+            return _make_metadata(vid)
 
-        mock_trans.side_effect = trans_side
+        mock_meta.side_effect = meta_side
+        mock_trans.side_effect = lambda vid, opts: _make_transcript(vid)
 
         opts = FetchOptions(out=tmp_path, fail_fast=True, workers=1)
         result = process_batch(
-            ["vid_aaaaaaa", "bad_trans_aaa", "vid_ccccccc", "vid_ddddddd"], opts
+            ["vid_aaaaaaa", "bad_meta_aaa", "vid_ccccccc", "vid_ddddddd"], opts
         )
 
         assert result.failed >= 1

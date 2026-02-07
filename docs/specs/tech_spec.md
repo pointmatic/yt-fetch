@@ -185,11 +185,11 @@ async def process_batch(video_ids: list[str], options: FetchOptions) -> BatchRes
 
 Per-video workflow:
 1. Create output folder `<out_dir>/<video_id>/`
-2. Check cache — skip steps where output exists (unless `--force*`)
-3. Fetch metadata → write `metadata.json`
-4. Fetch transcript → write `transcript.json`, `transcript.txt`, optionally `.vtt`/`.srt`
+2. Check cache — skip network fetch where output exists (unless `--force*`)
+3. Fetch metadata → write `metadata.json`; if cached, read `metadata.json` back into `Metadata` object
+4. Fetch transcript → write `transcript.json`, `transcript.txt`, optionally `.vtt`/`.srt`; if cached, read `transcript.json` back into `Transcript` object
 5. Download media (if enabled) → write to `media/` subfolder
-6. Return structured `FetchResult`
+6. Return structured `FetchResult` with in-memory `metadata` and `transcript` always populated (when available)
 
 Batch orchestration:
 - Use `asyncio` with a semaphore for concurrency (`--workers N`, default 3)
@@ -200,7 +200,9 @@ Batch orchestration:
 
 ```python
 def write_metadata(metadata: Metadata, out_dir: Path) -> Path
+def read_metadata(out_dir: Path, video_id: str) -> Metadata | None
 def write_transcript_json(transcript: Transcript, out_dir: Path) -> Path
+def read_transcript_json(out_dir: Path, video_id: str) -> Transcript | None
 def write_transcript_txt(transcript: Transcript, out_dir: Path) -> Path
 def write_transcript_vtt(transcript: Transcript, out_dir: Path) -> Path
 def write_transcript_srt(transcript: Transcript, out_dir: Path) -> Path
@@ -384,7 +386,8 @@ All output files are written atomically:
 ### Caching / Idempotency
 
 - Before each step, check if the output file already exists
-- If exists and no `--force*` flag: skip that step
+- If exists and no `--force*` flag: skip the network fetch for that step
+- When skipping a fetch, **read the cached file from disk** and populate the in-memory object (`Metadata` or `Transcript`) so that `FetchResult` always contains the data for library consumers
 - Selective force flags: `--force-metadata`, `--force-transcript`, `--force-media`
 - `--force` overrides all selective flags
 

@@ -101,7 +101,7 @@ class TestProcessVideo:
         opts = FetchOptions(out=tmp_path)
         result = process_video("dQw4w9WgXcQ", opts)
 
-        assert result.success is False
+        assert result.success is True
         assert result.metadata_path is not None
         assert result.transcript_path is None
         assert len(result.errors) == 1
@@ -122,10 +122,14 @@ class TestProcessVideo:
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
     def test_cache_skip_metadata(self, mock_meta, mock_trans, tmp_path):
-        # Pre-create cached metadata file
+        # Pre-create cached metadata file with valid data
+        meta = _make_metadata()
         video_dir = tmp_path / "dQw4w9WgXcQ"
         video_dir.mkdir()
-        (video_dir / "metadata.json").write_text("{}")
+        import json
+        (video_dir / "metadata.json").write_text(
+            json.dumps(meta.model_dump(mode="json"), default=str)
+        )
 
         mock_trans.return_value = _make_transcript()
 
@@ -134,14 +138,21 @@ class TestProcessVideo:
 
         mock_meta.assert_not_called()
         assert result.metadata_path == video_dir / "metadata.json"
+        assert result.metadata is not None
+        assert result.metadata.video_id == "dQw4w9WgXcQ"
+        assert result.metadata.title == "Test Video"
 
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
     def test_cache_skip_transcript(self, mock_meta, mock_trans, tmp_path):
-        # Pre-create cached transcript file
+        # Pre-create cached transcript file with valid data
+        trans = _make_transcript()
         video_dir = tmp_path / "dQw4w9WgXcQ"
         video_dir.mkdir()
-        (video_dir / "transcript.json").write_text("{}")
+        import json
+        (video_dir / "transcript.json").write_text(
+            json.dumps(trans.model_dump(mode="json"), default=str)
+        )
 
         mock_meta.return_value = _make_metadata()
 
@@ -150,6 +161,10 @@ class TestProcessVideo:
 
         mock_trans.assert_not_called()
         assert result.transcript_path == video_dir / "transcript.json"
+        assert result.transcript is not None
+        assert result.transcript.video_id == "dQw4w9WgXcQ"
+        assert result.transcript.language == "en"
+        assert len(result.transcript.segments) == 1
 
     @patch("yt_fetch.core.pipeline.get_transcript")
     @patch("yt_fetch.core.pipeline.get_metadata")
@@ -228,3 +243,61 @@ class TestProcessVideo:
 
         assert result.metadata == meta
         assert result.transcript == trans
+
+    @patch("yt_fetch.core.pipeline.get_transcript")
+    @patch("yt_fetch.core.pipeline.get_metadata")
+    def test_success_true_when_only_transcript_fails(self, mock_meta, mock_trans, tmp_path):
+        mock_meta.return_value = _make_metadata()
+        mock_trans.side_effect = TranscriptError("No captions")
+
+        opts = FetchOptions(out=tmp_path)
+        result = process_video("dQw4w9WgXcQ", opts)
+
+        assert result.success is True
+        assert result.metadata is not None
+        assert result.transcript is None
+        assert len(result.errors) == 1
+        assert "transcript" in result.errors[0]
+
+    @patch("yt_fetch.core.pipeline.get_transcript")
+    @patch("yt_fetch.core.pipeline.get_metadata")
+    def test_success_false_when_metadata_fails(self, mock_meta, mock_trans, tmp_path):
+        mock_meta.side_effect = MetadataError("Video not found")
+        mock_trans.return_value = _make_transcript()
+
+        opts = FetchOptions(out=tmp_path)
+        result = process_video("dQw4w9WgXcQ", opts)
+
+        assert result.success is False
+        assert result.metadata is None
+        assert result.transcript is not None
+        assert any("metadata" in e for e in result.errors)
+
+    @patch("yt_fetch.core.pipeline.get_transcript")
+    @patch("yt_fetch.core.pipeline.get_metadata")
+    def test_cached_rerun_populates_both_objects(self, mock_meta, mock_trans, tmp_path):
+        """Simulate a second run where both files are cached on disk."""
+        import json
+
+        meta = _make_metadata()
+        trans = _make_transcript()
+        video_dir = tmp_path / "dQw4w9WgXcQ"
+        video_dir.mkdir()
+        (video_dir / "metadata.json").write_text(
+            json.dumps(meta.model_dump(mode="json"), default=str)
+        )
+        (video_dir / "transcript.json").write_text(
+            json.dumps(trans.model_dump(mode="json"), default=str)
+        )
+
+        opts = FetchOptions(out=tmp_path)
+        result = process_video("dQw4w9WgXcQ", opts)
+
+        mock_meta.assert_not_called()
+        mock_trans.assert_not_called()
+        assert result.success is True
+        assert result.metadata is not None
+        assert result.metadata.video_id == "dQw4w9WgXcQ"
+        assert result.transcript is not None
+        assert result.transcript.language == "en"
+        assert len(result.transcript.segments) == 1

@@ -1,8 +1,8 @@
 # yt-fetch
 
-YouTube video metadata, transcript, and media fetcher.
+AI-ready YouTube content extraction — metadata, transcripts, and media in structured formats.
 
-Given one or more YouTube video IDs (or URLs), `yt-fetch` downloads metadata, transcripts, and optionally video/audio to a structured local folder. It supports batch processing, caching, retries, rate limiting, and multiple transcript export formats.
+Given one or more YouTube video IDs, URLs, playlists, or channels, `yt-fetch` extracts structured metadata and transcripts optimized for downstream AI/LLM pipelines. It produces LLM-ready plain text, content hashes for change detection, optional token count estimates, and unified video bundles — plus batch processing, caching, retries, and rate limiting.
 
 ## Features
 

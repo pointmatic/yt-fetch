@@ -1,20 +1,25 @@
-# features.md — YouTube Fetch + Transcript Collector (Python)
+# features.md — yt-fetch: AI-Ready YouTube Content Extraction
 
 ## Overview
-This document defines the features and functionality (not technical or implementation details) for the YouTube Fetch + Transcript Collector project. For architecture, modules, and dependencies see `tech_spec.md`.
+This document defines the features and functionality (not technical or implementation details) for yt-fetch. For architecture, modules, and dependencies see `tech_spec.md`.
 
 ## Project Goal
-Build a Python program that, given one or more YouTube video IDs, downloads assets according to the following requirements:
+Build a Python tool that extracts structured, AI-ready content from YouTube videos. Given one or more video IDs, URLs, playlists, or channels, yt-fetch produces normalized metadata, transcripts, and optional media in formats optimized for downstream AI/LLM pipelines (summarization, fact-checking, RAG, search indexing, etc.).
 
 ### Core Requirements
-- fetch and store video metadata
-- download the video (optional)
-- download the audio (optional)
-- fetch and store transcripts (when available)
-- emit consistent outputs (JSON + text/VTT/SRT) to a local folder
+- fetch and store video metadata in structured JSON
+- fetch and store transcripts (when available) in multiple formats
+- produce LLM-ready plain text transcripts with configurable formatting
+- resolve playlist and channel URLs to video IDs for batch processing
+- emit consistent, deterministic outputs to a local folder
+- provide content hashes for change detection in incremental pipelines
+- optionally estimate token counts for context window planning
+
+### Secondary Requirements
+- download video and/or audio media (optional, for speech-to-text fallback or archival)
 
 ### Operational Requirements
-- operate gracefully with errors and retries
+- operate gracefully with structured error classification and configurable retries
 - provide clear feedback and logging
 - support configuration via CLI flags and/or a config file
 - support parallel processing for batch jobs
@@ -29,13 +34,14 @@ Build a Python program that, given one or more YouTube video IDs, downloads asse
 ### Usability Requirements
 The program should work well for:
 - one-off CLI usage
-- batch jobs from a file
-- being imported as a library from another Python project
+- batch jobs from a file or playlist/channel URL
+- being imported as a library from another Python project (e.g., `yt-factify`)
 
 ### Non-goals
 - UI/web app
-- full YouTube channel crawling
 - bypassing DRM or paywalled content
+- speech-to-text / audio transcription (yt-fetch fetches existing transcripts; it does not generate them from audio)
+- LLM integration (yt-fetch prepares content for LLMs; it does not call LLM APIs itself)
 
 ---
 
@@ -54,6 +60,17 @@ Also accept full YouTube URLs and extract the video ID:
 - `https://www.youtube.com/shorts/<id>`
 - URLs containing extra query params should still parse correctly
 
+### Playlist and channel inputs
+Accept playlist and channel URLs as batch input sources:
+- `https://www.youtube.com/playlist?list=<playlist_id>`
+- `https://www.youtube.com/@<handle>` or `https://www.youtube.com/channel/<channel_id>`
+
+Behavior:
+- Resolve the URL to a list of video IDs using `yt-dlp`'s playlist/channel extraction
+- Feed the resolved IDs into the existing pipeline (deduplication, caching, etc. all apply)
+- Optionally limit the number of videos resolved (`--max-videos N`)
+- Store the resolved video ID list in the output directory for reproducibility
+
 ### Optional inputs
 - Output directory (default `./out`)
 - Language preferences for transcripts (e.g., `en`, `en-US`, `es`)
@@ -61,8 +78,9 @@ Also accept full YouTube URLs and extract the video ID:
 - Desired media format(s): mp4, webm, m4a, mp3 (as applicable)
 - Max resolution / best available
 - Rate limits and retries
-- “Fail fast” vs “continue on errors”
+- "Fail fast" vs "continue on errors"
 - API keys (optional): YouTube Data API v3 key for richer metadata
+- Token count estimation: tokenizer name (default `cl100k_base`), or disabled
 
 ---
 
@@ -98,6 +116,7 @@ Include at least:
 - `view_count`, `like_count` (optional)
 - `fetched_at` (timestamp)
 - `metadata_source` (e.g., `"yt-dlp"`, `"youtube-data-api"`)
+- `content_hash` (SHA-256 of the canonical metadata fields, for change detection)
 - `raw` (optional: store the unmodified raw metadata payload under a key)
 
 ### Transcript outputs
@@ -115,13 +134,32 @@ Top-level keys:
 - `fetched_at`
 - `transcript_source` (e.g., `"youtube-transcript-api"`)
 - `available_languages` (list if known)
+- `content_hash` (SHA-256 of the concatenated segment text, for change detection)
+- `token_count` (estimated token count using configured tokenizer, if enabled; `null` if disabled)
 - `errors` (optional list; empty when ok)
 
-#### `transcript.txt`
-Plain text concatenation of segment text in order, without timestamps. Intended for human reading and LLM ingestion.
+#### `transcript.txt` (LLM-ready)
+Plain text transcript optimized for LLM ingestion. Configurable formatting:
+- **Default mode**: concatenation of segment text with paragraph breaks at natural silence gaps (configurable gap threshold, default 2.0 seconds)
+- **Timestamped mode** (`--txt-timestamps`): include `[MM:SS]` markers at paragraph boundaries for citation support
+- **Raw mode** (`--txt-raw`): bare concatenation with no formatting (backward-compatible with current behavior)
+
+The `is_generated` status is noted at the top of the file when true, so downstream consumers can weight human vs. auto-generated transcripts differently.
 
 #### Optional: `transcript.vtt` and `transcript.srt`
 Generate from segments with correct timestamp formatting.
+
+#### Optional: `video_bundle.json`
+A single unified envelope combining metadata + transcript + error info per video. Enabled with `--bundle`. Contains:
+- `video_id`
+- `metadata` (full metadata object)
+- `transcript` (full transcript object, or `null`)
+- `errors` (list of structured `FetchError` objects)
+- `content_hash` (SHA-256 of the combined metadata + transcript content)
+- `token_count` (estimated token count of transcript, if enabled)
+- `fetched_at` (timestamp of this bundle generation)
+
+This is a convenience for programmatic consumers that prefer a single file per video over multiple files.
 
 ---
 
@@ -156,6 +194,7 @@ Behavior:
   - generated transcript if human transcript not available (configurable)
 - If transcripts are disabled for a video, store a structured error in output.
 - When transcript fetch fails for the requested language, report the available languages in the error message and in `result.errors` so callers can provide actionable feedback.
+- When `is_generated` is true, note it prominently in both `transcript.json` and `transcript.txt` so downstream AI pipelines can weight human vs. auto-generated transcripts differently.
 
 Edge cases:
 - Video has no transcript
@@ -163,7 +202,11 @@ Edge cases:
 - Multiple language variants exist
 - Network failures / throttling
 
-### 4) Media download (optional)
+### 4) Media download (optional, secondary)
+Media download is secondary to the text extraction mission. It is primarily useful for:
+- speech-to-text fallback when no transcript exists (yt-fetch provides the audio; external tools do STT)
+- archival or offline playback
+
 If enabled, use `yt-dlp` to download:
 - video only, audio only, or both
 - user can set max resolution (e.g., 720p)
@@ -186,10 +229,26 @@ Requirements:
 ### 6) Error handling + resilience
 - Per-video isolation: one failing ID should not stop the batch by default.
 - Provide `--fail-fast` to stop on first failure.
-- Retries with exponential backoff for network errors.
+- Retries with exponential backoff for transient errors only (not for permanently unavailable content).
+  - Retries are configurable (`--retries N`); setting `--retries 0` disables internal retries entirely, allowing library consumers to manage retries externally (e.g., via `gentlify`).
 - Respect rate limiting:
   - global requests per second (simple token bucket)
-  - or per-component throttles (transcript vs metadata vs media)
+  - rate limiting is configurable; setting `--rate-limit 0` disables internal rate limiting for library consumers that manage throttling externally.
+
+#### Structured error classification
+
+All errors reported in `FetchResult.errors` must be structured objects (`FetchError`) with:
+- **`code`** — a machine-readable `FetchErrorCode` enum value (e.g., `transcripts_disabled`, `rate_limited`, `network_error`)
+- **`phase`** — a `FetchPhase` enum indicating which pipeline step failed (`metadata`, `transcript`, or `media`)
+- **`retryable`** — a boolean hint indicating whether the error is transient (worth retrying) or permanent (content unavailable)
+- **`message`** — a human-readable description
+- **`details`** — optional dict with extra context (e.g., available languages, HTTP status)
+
+Callers must be able to programmatically distinguish:
+- **Content unavailable** (video private/deleted, transcripts disabled, no transcript in requested language) — `retryable=False`
+- **Transient infrastructure failure** (rate limited, HTTP 5xx, network error, timeout) — `retryable=True`
+
+See `error_handling_features.md` for the full error code reference and exception hierarchy.
 
 ### 7) Logging and observability
 - Console logs should be concise, with a `--verbose` flag.
@@ -206,6 +265,8 @@ Provide a CLI named `yt_fetch` (or similar) with subcommands:
 - `yt_fetch fetch --id <id> [--id <id2> ...]`
 - `yt_fetch fetch --file ids.txt`
 - `yt_fetch fetch --jsonl input.jsonl --id-field video_id`
+- `yt_fetch fetch --playlist <playlist_url>` (resolve playlist to IDs, then fetch)
+- `yt_fetch fetch --channel <channel_url>` (resolve channel to IDs, then fetch)
 - `yt_fetch transcript --id <id>` (transcript only)
 - `yt_fetch metadata --id <id>` (metadata only)
 - `yt_fetch media --id <id>` (download only)
@@ -224,6 +285,11 @@ Common flags:
 - `--rate-limit RPS`
 - `--fail-fast`
 - `--verbose`
+- `--max-videos N` (limit videos resolved from playlist/channel)
+- `--txt-timestamps` (include `[MM:SS]` markers in transcript.txt)
+- `--txt-raw` (bare concatenation, no paragraph formatting)
+- `--bundle` (emit `video_bundle.json` per video)
+- `--tokenizer <name>` (enable token count estimation; default disabled)
 
 Exit codes:
 - `0` success (even if some videos failed, if not fail-fast) — but print a summary
@@ -236,17 +302,21 @@ Expose a Python API so other code can do:
 
 - `fetch_video(video_id, options) -> FetchResult`
 - `fetch_batch(video_ids, options) -> BatchResult`
+- `resolve_playlist(url, max_videos=None) -> list[str]`
+- `resolve_channel(url, max_videos=None) -> list[str]`
 
 Where results include:
 - paths written
 - metadata object (always populated on success, even when read from cache)
 - transcript object (always populated when available, even when read from cache)
-- error list
+- structured error list (`list[FetchError]`) with machine-readable codes and retryable hints
+- content hashes for change detection
+- token count (if tokenizer configured)
 
 The library API must behave identically to the CLI for the same inputs. In particular:
 - `result.metadata` must always be populated when metadata is available, regardless of `force_metadata` or caching state.
 - `result.transcript` must always be populated when a transcript is available, regardless of `force_transcript` or caching state.
-- When a transcript is not available, `result.errors` must contain a descriptive message (e.g., available languages) so the caller can distinguish "no captions" from "not fetched."
+- When a transcript is not available, `result.errors` must contain a structured `FetchError` with the appropriate `FetchErrorCode` (e.g., `TRANSCRIPTS_DISABLED`, `TRANSCRIPT_NOT_FOUND`) and `details` (e.g., available languages) so the caller can programmatically distinguish "no captions" from "not fetched."
 
 ---
 
@@ -266,6 +336,52 @@ Suggested env vars:
 - `YT_FETCH_RETRIES`
 
 Config file fields should mirror CLI flags.
+
+### 10) Playlist and channel resolution
+Accept playlist URLs and channel URLs as input sources. Resolve them to video ID lists using `yt-dlp`'s extraction capabilities.
+
+- `resolve_playlist(url)` returns an ordered list of video IDs from a playlist
+- `resolve_channel(url)` returns video IDs from a channel's uploads
+- Both support `--max-videos N` to limit the number of resolved IDs
+- The resolved ID list is written to `<out>/resolved_ids.json` for reproducibility and auditing
+- Resolved IDs feed into the standard pipeline (deduplication, caching, batch processing all apply)
+
+### 11) LLM-ready transcript formatting
+The `transcript.txt` output is optimized for LLM consumption:
+
+- **Paragraph chunking**: insert paragraph breaks at natural silence gaps between segments (configurable gap threshold, default 2.0 seconds). This produces readable, semantically coherent paragraphs rather than a wall of text.
+- **Timestamp markers** (optional, `--txt-timestamps`): insert `[MM:SS]` markers at paragraph boundaries. Useful for citation and reference back to the original video.
+- **Raw mode** (optional, `--txt-raw`): bare concatenation with no formatting, for backward compatibility.
+- **Auto-generated notice**: when `is_generated` is true, prepend a notice line (e.g., `[Auto-generated transcript]`) so downstream consumers can adjust confidence weighting.
+
+### 12) Token count estimation
+Optionally estimate the token count of transcript text using a configurable tokenizer.
+
+- Enabled via `--tokenizer <name>` (CLI) or `FetchOptions(tokenizer="cl100k_base")` (library)
+- Default: disabled (no tokenizer dependency required)
+- Supported tokenizers: `cl100k_base` (GPT-4), `o200k_base` (GPT-4o), or any tokenizer supported by `tiktoken`
+- Token count is stored in `transcript.json` as `token_count` (integer or `null`)
+- Also available in `video_bundle.json` and `FetchResult.transcript.token_count`
+- `tiktoken` is an optional dependency (installed via `pip install yt-fetch[tokens]`)
+
+This lets AI pipelines know upfront whether a transcript fits in a context window without importing `tiktoken` themselves.
+
+### 13) Content hash / change detection
+Compute SHA-256 content hashes for metadata and transcript outputs.
+
+- `metadata.json` includes `content_hash`: SHA-256 of canonical metadata fields (title, description, tags, upload_date, duration_seconds)
+- `transcript.json` includes `content_hash`: SHA-256 of concatenated segment text
+- `video_bundle.json` includes `content_hash`: SHA-256 of combined metadata + transcript content
+- Hashes enable downstream pipelines to detect when a re-fetch actually changed content (e.g., auto-captions improved, description updated) without diffing full files
+- Hashes are deterministic: same content always produces the same hash
+
+### 14) Video bundle output
+Optionally emit a single `video_bundle.json` per video that combines all structured data into one file.
+
+- Enabled via `--bundle` (CLI) or `FetchOptions(bundle=True)` (library)
+- Contains: `video_id`, `metadata`, `transcript`, `errors`, `content_hash`, `token_count`, `fetched_at`
+- Simplifies programmatic consumption: one file to read per video instead of joining `metadata.json` + `transcript.json`
+- The bundle is written after all other outputs, so it reflects the final state
 
 ---
 
@@ -327,4 +443,9 @@ Prefer tests that do not require network:
 - Batch mode processes multiple IDs, producing a clear summary and preserving per-video isolation.
 - Re-running without `--force` skips completed work.
 - Transcripts can be exported to `.txt` and `.json` reliably; optional `.vtt`/`.srt` formatting is correct.
+- `transcript.txt` uses paragraph chunking by default, producing readable LLM-ready text.
 - Errors are structured, logged, and do not crash the whole run unless configured.
+- Playlist and channel URLs resolve to video IDs and feed into the standard pipeline.
+- Content hashes are present in `metadata.json` and `transcript.json`.
+- Token counts are present when a tokenizer is configured.
+- `--bundle` produces a valid `video_bundle.json` per video.

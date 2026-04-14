@@ -25,15 +25,5 @@ build/
 .env
 .venv
 
-
-# Generic
-
-# Project
-.archive
-/site/
-out/
-
-# removed and added with `pyve --init --force`
-
 # project-guide
 docs/project-guide/**/*.bak.*

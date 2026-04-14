@@ -1412,3 +1412,15 @@ Update README and documentation to reflect the AI-ready positioning with compreh
 - [x] Verify: README renders correctly on GitHub
 - [x] Verify: MkDocs builds without errors
 - [x] Bump version to `1.4.1`
+
+### Story M.g: v1.4.2 Update Pyve, migrate to Project-Guide [Done]
+
+Update Pyve tooling and migrate documentation from `guides/project-guides` to the new `project-guide` layout.
+
+- [x] Migrate from `guides/project-guides` to `project-guide`
+- [x] Update Pyve to latest version
+- [x] Bump version to `1.4.2` in `pyproject.toml`
+- [x] Delete stale `v1.4.1a` tag (local and remote)
+- [x] Tag `v1.4.2` and push to trigger PyPI publish workflow
+- [x] Verify: PyPI publish succeeds (new filename, no 400 conflict)
+- [x] Verify: GitHub release created for `v1.4.2`

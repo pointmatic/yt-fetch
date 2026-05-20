@@ -388,8 +388,18 @@ Rules:
 - **Version**: semver, bumped per story. Stories with no code changes omit the version.
 - **Status suffix**: `[Planned]` initially, changed to `[Done]` when completed.
 - **Checklist**: use `- [ ]` for planned tasks, `- [x]` for completed tasks. Subtasks are indented with two spaces.
-- **First story** should always be a minimal "Hello World" — the smallest possible runnable artifact.
-- **Homepage**: If a project homepage (e.g. `docs/index.html`) was created during the planning phase, include a task in the Hello World story to verify it is present and references the correct repository URL.
+- **First story** should always be a minimal "Hello World" (Story A.a) — the smallest
+  possible runnable artifact proving the environment and package structure are wired up.
+- **Second story** (A.b) should be an **end-to-end stack spike** — a throwaway script
+  (in `scripts/`, not the package) that wires the full critical path together before
+  any production modules are written. See `docs/guides/best-practices-guide.md` §
+  "Hello World First — Spike Early, Spike Often" for the full principle and rationale.
+- **Additional spikes** should be added as the first story of any phase that introduces
+  a major new integration boundary (new API, new hardware backend, new async framework).
+  Each spike gets its own story ID and version bump.
+- **Homepage**: If a project homepage (e.g. `docs/index.html`) was created during the
+  planning phase, include a task in the Hello World story to verify it is present and
+  references the correct repository URL.
 - **Each story** should be completable in a single session and independently verifiable.
 - **Verification tasks** (e.g. "Verify: command prints version") should be included where appropriate.
 

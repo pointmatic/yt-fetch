@@ -52,6 +52,71 @@ Recognize and adapt to two distinct development modes:
 
 ---
 
+## Hello World First — Spike Early, Spike Often
+
+### Front-Load Integration Risk With Minimal End-to-End Spikes
+
+**Problem:** Projects with multiple external dependencies (ML frameworks, cloud APIs,
+hardware accelerators, async libraries) often discover a critical assumption doesn't
+hold — wrong backend, incompatible library versions, missing system dependency —
+only after significant production code has been written. This is the "jump off the
+cliff YOLO" failure mode: everything looks fine until the very end, when it isn't.
+
+**Best Practice:**
+
+Before writing any production module code, create a **minimal throwaway spike** that
+wires the full stack together end-to-end. The spike:
+
+- Lives in `scripts/` or `notebooks/`, **not** in the installable package
+- Is explicitly labelled throwaway (comment at the top: `# SPIKE — not production code`)
+- Uses hardcoded values, no config, no abstraction
+- Does exactly one thing: prove the critical path works
+
+A project with multiple integration layers warrants **multiple spikes**, one per
+major new integration boundary. Add a new spike story whenever you introduce:
+
+- A new external service or API
+- A new hardware accelerator (GPU, MPS, TPU)
+- A new async or concurrency framework
+- A new ML framework or model serving path
+
+**Spike placement in `stories.md`:**
+
+- **First spike (A.b):** Immediately after scaffolding (A.a), before any
+  production modules. Validates the core technology stack.
+- **Subsequent spikes:** As early as possible after the integration boundary
+  is introduced — typically the first story in the phase that introduces it.
+- Spikes get their own version bump and story ID.
+- Once a spike passes, the production implementation that follows it can
+  proceed with confidence.
+
+**Example — the shape of a good spike:**
+
+```
+Script: scripts/spike_<integration_name>.py
+───────────────────────────────────────────
+1. Acquire the resource (connect to API, load dataset, initialize client)
+2. Confirm the environment (log version, device, credentials, region, etc.)
+3. Execute the critical path (one real operation end-to-end)
+4. Assert the output is sane (type check, range check, non-empty)
+5. Print a human-readable summary
+
+If this script runs and produces sensible output, the integration is validated.
+If it fails, you find out now — before writing the modules that depend on it.
+```
+
+**What a spike is NOT:**
+
+- A prototype to keep and clean up — delete or clearly archive it after it passes
+- A substitute for proper tests — it proves the path exists, not that it's correct
+- An excuse to skip the production implementation — it's a gate, not a destination
+
+**Rationale:** The cost of discovering a broken assumption at A.b (one story in) is
+near zero. The cost of discovering it at D.b (ten stories in) is a potential
+rewrite. Spikes are cheap insurance against the most expensive category of failure.
+
+---
+
 ## CI/CD Setup
 
 ### Always Validate Locally Before Creating CI Infrastructure
